@@ -1,5 +1,6 @@
 package tech.powerjob.server.auth.jwt.impl;
 
+import java.time.Instant;
 import com.google.common.collect.Maps;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.io.Decoders;
@@ -59,7 +60,7 @@ public class JwtServiceImpl implements JwtService {
                 .setHeaderParam("typ", "JWT")
                 .addClaims(body)
                 .setSubject("PowerJob")
-                .setExpiration(new Date(System.currentTimeMillis() + 1000L * expireSeconds))
+                .setExpiration(new Date(Instant.now().toEpochMilli() + 1000L * expireSeconds))
                 .setId(UUID.randomUUID().toString())
                 .signWith(genSecretKey(secret), SignatureAlgorithm.HS256);
         return jwtBuilder.compact();

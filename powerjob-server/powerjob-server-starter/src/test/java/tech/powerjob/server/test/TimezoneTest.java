@@ -1,5 +1,6 @@
 package tech.powerjob.server.test;
 
+import java.time.Instant;
 import tech.powerjob.common.OmsConstant;
 import org.apache.commons.lang3.time.DateFormatUtils;
 import org.junit.jupiter.api.Test;
@@ -20,7 +21,7 @@ public class TimezoneTest {
         Date now = new Date();
         System.out.println(now.toString());
 
-        System.out.println("timestamp before GMT: " + System.currentTimeMillis());
+        System.out.println("timestamp before GMT: " + Instant.now().toEpochMilli());
 
         TimeZone.setDefault(TimeZone.getTimeZone("GMT"));
         TimeZone timeZone = TimeZone.getDefault();
@@ -28,7 +29,7 @@ public class TimezoneTest {
         System.out.println(new Date());
         System.out.println(DateFormatUtils.format(new Date(), OmsConstant.TIME_PATTERN));
 
-        System.out.println("timestamp after GMT: " + System.currentTimeMillis());
+        System.out.println("timestamp after GMT: " + Instant.now().toEpochMilli());
     }
 
 }

@@ -1,5 +1,6 @@
 package tech.powerjob.worker.persistence;
 
+import java.time.Instant;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Test;
@@ -63,9 +64,9 @@ public class TaskDAOPerformanceTest extends AbstractTaskDAOTest {
                 String taskId = String.format("%s.%d", taskName, id);
                 TaskDO taskDO = buildTaskDO(taskId, INSTANCE_ID, TaskStatus.of(ThreadLocalRandom.current().nextInt(1, 7)));
                 try {
-                    long s = System.currentTimeMillis();
+                    long s = Instant.now().toEpochMilli();
                     taskDAO.save(taskDO);
-                    long cost = System.currentTimeMillis() - s;
+                    long cost = Instant.now().toEpochMilli() - s;
                     if (cost > 10) {
                         log.warn("[{}] id={} save cost too much: {}", logKey, id, cost);
                     }

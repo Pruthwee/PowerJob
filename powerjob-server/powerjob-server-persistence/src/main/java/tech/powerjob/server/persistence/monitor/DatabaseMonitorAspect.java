@@ -1,5 +1,6 @@
 package tech.powerjob.server.persistence.monitor;
 
+import java.time.Instant;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.aspectj.lang.ProceedingJoinPoint;
@@ -49,7 +50,7 @@ public class DatabaseMonitorAspect {
                 .setMethodName(methodName)
                 .setStatus(DatabaseEvent.Status.SUCCESS);
 
-        long startTs = System.currentTimeMillis();
+        long startTs = Instant.now().toEpochMilli();
         try {
             final Object ret = point.proceed();
             event.setRows(parseEffectRows(ret));
@@ -58,7 +59,7 @@ public class DatabaseMonitorAspect {
             event.setErrorMsg(t.getClass().getSimpleName()).setStatus(DatabaseEvent.Status.FAILED);
             throw t;
         } finally {
-            long cost = System.currentTimeMillis() - startTs;
+            long cost = Instant.now().toEpochMilli() - startTs;
             monitorService.monitor(event.setCost(cost));
         }
     }

@@ -1,5 +1,6 @@
 package tech.powerjob.worker.persistence;
 
+import java.time.Instant;
 import tech.powerjob.worker.common.constants.TaskStatus;
 
 import java.nio.charset.StandardCharsets;
@@ -23,9 +24,9 @@ public class AbstractTaskDAOTest {
         taskDO.setStatus(taskStatus.getValue());
         taskDO.setResult("SUCCESS");
         taskDO.setFailedCnt(0);
-        taskDO.setLastModifiedTime(System.currentTimeMillis());
-        taskDO.setLastReportTime(System.currentTimeMillis());
-        taskDO.setCreatedTime(System.currentTimeMillis());
+        taskDO.setLastModifiedTime(Instant.now().toEpochMilli());
+        taskDO.setLastReportTime(Instant.now().toEpochMilli());
+        taskDO.setCreatedTime(Instant.now().toEpochMilli());
         return taskDO;
     }
 }

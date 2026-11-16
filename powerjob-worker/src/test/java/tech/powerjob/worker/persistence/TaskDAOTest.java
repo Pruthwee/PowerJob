@@ -1,5 +1,6 @@
 package tech.powerjob.worker.persistence;
 
+import java.time.Instant;
 import com.google.common.collect.Lists;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
@@ -86,8 +87,8 @@ class TaskDAOTest extends AbstractTaskDAOTest {
         assert simpleQueryPlusRet.get(0).get("status") != null;
         assert simpleQueryPlusRet.get(0).get("instanceId") == null;
 
-        boolean updateToSuccessRet = taskDAO.updateTaskStatus(1L, "1", TaskStatus.WORKER_PROCESS_SUCCESS.getValue(), System.currentTimeMillis(), "UPDATE_TO_SUCCESS");
-        boolean updateToFailedRet = taskDAO.updateTaskStatus(1L, "2", TaskStatus.WORKER_PROCESS_FAILED.getValue(), System.currentTimeMillis(), "UPDATE_TO_FAILED");
+        boolean updateToSuccessRet = taskDAO.updateTaskStatus(1L, "1", TaskStatus.WORKER_PROCESS_SUCCESS.getValue(), Instant.now().toEpochMilli(), "UPDATE_TO_SUCCESS");
+        boolean updateToFailedRet = taskDAO.updateTaskStatus(1L, "2", TaskStatus.WORKER_PROCESS_FAILED.getValue(), Instant.now().toEpochMilli(), "UPDATE_TO_FAILED");
         assert updateToSuccessRet;
         assert updateToFailedRet;
 

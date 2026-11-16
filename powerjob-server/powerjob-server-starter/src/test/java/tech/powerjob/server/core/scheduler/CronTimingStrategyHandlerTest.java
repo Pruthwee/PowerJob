@@ -1,5 +1,6 @@
 package tech.powerjob.server.core.scheduler;
 
+import java.time.Instant;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.time.DateFormatUtils;
@@ -53,7 +54,7 @@ public class CronTimingStrategyHandlerTest {
     public void compareToQuartzCron() {
         // 对比 quartz cron 结果
         for (String cron : CRON_LIST) {
-            Long referenceTime = System.currentTimeMillis();
+            Long referenceTime = Instant.now().toEpochMilli();
             int count = 0;
             while (referenceTime != null && count < 50) {
                 CronExpression cronExpression = new CronExpression(cron);
@@ -72,7 +73,7 @@ public class CronTimingStrategyHandlerTest {
     public void test01() {
         // cron 的有效区间小于 lifecycle
         String cron = "0 15 11 * * ? 2088-2089";
-        Long referenceTime = System.currentTimeMillis();
+        Long referenceTime = Instant.now().toEpochMilli();
         LocalDateTime start = LocalDateTime.of(2088, 5, 1, 11, 15, 0);
         LocalDateTime end = LocalDateTime.of(2099, 5, 1, 11, 15, 0);
         Long nextTriggerTime = cronTimingStrategyHandler.calculateNextTriggerTime(referenceTime, cron, start.toEpochSecond(ZoneOffset.of("+8")) * 1000, end.toEpochSecond(ZoneOffset.of("+8")) * 1000);
@@ -84,7 +85,7 @@ public class CronTimingStrategyHandlerTest {
     public void test02() {
         // cron 的有效区间大于 lifecycle
         String cron = "0 15 11 * * ? 2077-2099";
-        Long referenceTime = System.currentTimeMillis();
+        Long referenceTime = Instant.now().toEpochMilli();
         LocalDateTime start = LocalDateTime.of(2088, 5, 1, 11, 15, 0);
         LocalDateTime end = LocalDateTime.of(2099, 5, 1, 11, 15, 0);
         Long nextTriggerTime = cronTimingStrategyHandler.calculateNextTriggerTime(referenceTime, cron, start.toEpochSecond(ZoneOffset.of("+8")) * 1000, end.toEpochSecond(ZoneOffset.of("+8")) * 1000);

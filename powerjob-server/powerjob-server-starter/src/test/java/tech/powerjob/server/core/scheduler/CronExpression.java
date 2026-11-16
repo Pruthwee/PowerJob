@@ -16,6 +16,8 @@ limitations under the License.
  */
 import java.io.Serializable;
 import java.text.ParseException;
+import java.time.Year;
+import java.time.ZoneOffset;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
@@ -251,7 +253,7 @@ public final class CronExpression implements Serializable, Cloneable {
     protected transient int lastdayOffset = 0;
     protected transient boolean expressionParsed = false;
 
-    public static final int MAX_YEAR = Calendar.getInstance().get(Calendar.YEAR) + 100;
+    public static final int MAX_YEAR = Year.now(ZoneOffset.UTC).getValue() + 100;
 
     /**
      * Constructs a new <CODE>CronExpression</CODE> based on the specified

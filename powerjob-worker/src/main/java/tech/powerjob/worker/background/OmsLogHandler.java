@@ -1,5 +1,6 @@
 package tech.powerjob.worker.background;
 
+import java.time.Instant;
 import tech.powerjob.common.enhance.SafeRunnable;
 import tech.powerjob.common.enums.LogLevel;
 import tech.powerjob.common.model.InstanceLogContent;
@@ -7,13 +8,16 @@ import tech.powerjob.common.request.WorkerLogReportReq;
 import tech.powerjob.remote.framework.transporter.Transporter;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Queues;
+import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import tech.powerjob.worker.background.discovery.ServerDiscoveryService;
 import tech.powerjob.worker.common.utils.TransportUtils;
 
 import java.util.List;
+import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
@@ -38,6 +42,9 @@ public class OmsLogHandler {
     // 生产者消费者模式，异步上传日志
     private final BlockingQueue<InstanceLogContent> logQueue = Queues.newLinkedBlockingQueue(10240);
 
+    // 触发上报的线程池：同一时刻只有一个线程真正上报（reportLock），因此线程数与排队数都有上限，多余的触发直接丢弃
+    private final ThreadPoolExecutor logSubmitExecutor = buildLogSubmitExecutor();
+
     // 每次上报携带的数据条数
     private static final int BATCH_SIZE = 20;
     // 本地囤积阈值
@@ -49,6 +56,15 @@ public class OmsLogHandler {
         this.serverDiscoveryService = serverDiscoveryService;
     }
 
+    private static ThreadPoolExecutor buildLogSubmitExecutor() {
+        ThreadPoolExecutor executor = new ThreadPoolExecutor(1, 2, 60L, TimeUnit.SECONDS,
+                new ArrayBlockingQueue<>(1),
+                new ThreadFactoryBuilder().setNameFormat("PJ-OmsLogSubmitter-%d").setDaemon(true).build(),
+                new ThreadPoolExecutor.DiscardPolicy());
+        executor.allowCoreThreadTimeOut(true);
+        return executor;
+    }
+
     /**
      * 提交日志
      * @param instanceId 任务实例ID
@@ -58,10 +74,10 @@ public class OmsLogHandler {
 
         if (logQueue.size() > REPORT_SIZE) {
             // 线程的生命周期是个不可循环的过程，一个线程对象结束了不能再次start，只能一直创建和销毁
-            new Thread(logSubmitter).start();
+            logSubmitExecutor.execute(logSubmitter);
         }
 
-        InstanceLogContent tuple = new InstanceLogContent(instanceId, System.currentTimeMillis(), logLevel.getV(), logContent);
+        InstanceLogContent tuple = new InstanceLogContent(instanceId, Instant.now().toEpochMilli(), logLevel.getV(), logContent);
         boolean offerRet = logQueue.offer(tuple);
         if (!offerRet) {
             log.warn("[OmsLogHandler] [{}] submit log failed, maybe your log speed is too fast!", instanceId);

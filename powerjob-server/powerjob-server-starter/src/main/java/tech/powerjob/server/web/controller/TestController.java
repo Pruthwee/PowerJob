@@ -1,5 +1,6 @@
 package tech.powerjob.server.web.controller;
 
+import java.time.Instant;
 import com.google.common.collect.Lists;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.MapUtils;
@@ -79,7 +80,7 @@ public class TestController {
     void testAlarmCenter() {
         JobInstanceAlarm jobInstanceAlarm = new JobInstanceAlarm().setAppId(277).setJobId(1).setInstanceId(2)
                 .setJobName("test-alarm").setJobParams("jobParams").setInstanceParams("instanceParams")
-                .setExecuteType(1).setFinishedTime(System.currentTimeMillis());
+                .setExecuteType(1).setFinishedTime(Instant.now().toEpochMilli());
 
         AlarmTarget target = new AlarmTarget().setName("ald").setPhone("208140").setExtra("extra")
                 .setPhone(MapUtils.getString(TestUtils.fetchTestConfig(), TestUtils.KEY_PHONE_NUMBER))

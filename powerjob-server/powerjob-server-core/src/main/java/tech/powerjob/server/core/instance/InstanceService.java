@@ -1,5 +1,6 @@
 package tech.powerjob.server.core.instance;
 
+import java.time.Instant;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
@@ -140,7 +141,7 @@ public class InstanceService {
             // 更新数据库，将状态置为停止
             instanceInfo.setStatus(STOPPED.getV());
             instanceInfo.setGmtModified(new Date());
-            instanceInfo.setFinishedTime(System.currentTimeMillis());
+            instanceInfo.setFinishedTime(Instant.now().toEpochMilli());
             instanceInfo.setResult(SystemInstanceResult.STOPPED_BY_USER);
             instanceInfoRepository.saveAndFlush(instanceInfo);
 
@@ -188,7 +189,7 @@ public class InstanceService {
         }
 
         instanceInfo.setStatus(InstanceStatus.WAITING_DISPATCH.getV());
-        instanceInfo.setExpectedTriggerTime(System.currentTimeMillis());
+        instanceInfo.setExpectedTriggerTime(Instant.now().toEpochMilli());
         instanceInfo.setFinishedTime(null);
         instanceInfo.setActualTriggerTime(null);
         instanceInfo.setTaskTrackerAddress(null);

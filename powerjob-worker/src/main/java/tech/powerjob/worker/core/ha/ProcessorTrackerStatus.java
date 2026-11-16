@@ -1,5 +1,6 @@
 package tech.powerjob.worker.core.ha;
 
+import java.time.Instant;
 import tech.powerjob.worker.pojo.request.ProcessorTrackerStatusReportReq;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -92,7 +93,7 @@ public class ProcessorTrackerStatus {
      */
     public boolean isTimeout() {
         if (dispatched) {
-            return System.currentTimeMillis() - lastActiveTime > HEARTBEAT_TIMEOUT_MS;
+            return Instant.now().toEpochMilli() - lastActiveTime > HEARTBEAT_TIMEOUT_MS;
         }
         // 未曾派发过任务的机器，不用处理
         return false;

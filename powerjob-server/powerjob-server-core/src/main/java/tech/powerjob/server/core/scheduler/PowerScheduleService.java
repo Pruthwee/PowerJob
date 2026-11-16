@@ -1,5 +1,6 @@
 package tech.powerjob.server.core.scheduler;
 
+import java.time.Instant;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
@@ -70,7 +71,7 @@ public class PowerScheduleService {
 
 
     public void scheduleNormalJob(TimeExpressionType timeExpressionType) {
-        long start = System.currentTimeMillis();
+        long start = Instant.now().toEpochMilli();
         // 调度 CRON 表达式 JOB
         try {
             final List<Long> allAppIds = appInfoRepository.listAppIdByCurrentServer(transportService.defaultProtocol().getAddress());
@@ -82,7 +83,7 @@ public class PowerScheduleService {
         } catch (Exception e) {
             log.error("[NormalScheduler] schedule cron job failed.", e);
         }
-        long cost = System.currentTimeMillis() - start;
+        long cost = Instant.now().toEpochMilli() - start;
         log.info("[NormalScheduler] {} job schedule use {} ms.", timeExpressionType, cost);
         if (cost > SCHEDULE_RATE) {
             log.warn("[NormalScheduler] The database query is using too much time({}ms), please check if the database load is too high!", cost);
@@ -90,7 +91,7 @@ public class PowerScheduleService {
     }
 
     public void scheduleCronWorkflow() {
-        long start = System.currentTimeMillis();
+        long start = Instant.now().toEpochMilli();
         // 调度 CRON 表达式 WORKFLOW
         try {
             final List<Long> allAppIds = appInfoRepository.listAppIdByCurrentServer(transportService.defaultProtocol().getAddress());
@@ -102,7 +103,7 @@ public class PowerScheduleService {
         } catch (Exception e) {
             log.error("[CronWorkflowSchedule] schedule cron workflow failed.", e);
         }
-        long cost = System.currentTimeMillis() - start;
+        long cost = Instant.now().toEpochMilli() - start;
         log.info("[CronWorkflowSchedule] cron workflow schedule use {} ms.", cost);
         if (cost > SCHEDULE_RATE) {
             log.warn("[CronWorkflowSchedule] The database query is using too much time({}ms), please check if the database load is too high!", cost);
@@ -111,7 +112,7 @@ public class PowerScheduleService {
 
 
     public void scheduleFrequentJob() {
-        long start = System.currentTimeMillis();
+        long start = Instant.now().toEpochMilli();
         // 调度 FIX_RATE/FIX_DELAY 表达式 JOB
         try {
             final List<Long> allAppIds = appInfoRepository.listAppIdByCurrentServer(transportService.defaultProtocol().getAddress());
@@ -123,7 +124,7 @@ public class PowerScheduleService {
         } catch (Exception e) {
             log.error("[FrequentJobSchedule] schedule frequent job failed.", e);
         }
-        long cost = System.currentTimeMillis() - start;
+        long cost = Instant.now().toEpochMilli() - start;
         log.info("[FrequentJobSchedule] frequent job schedule use {} ms.", cost);
         if (cost > SCHEDULE_RATE) {
             log.warn("[FrequentJobSchedule] The database query is using too much time({}ms), please check if the database load is too high!", cost);
@@ -150,7 +151,7 @@ public class PowerScheduleService {
      */
     private void scheduleNormalJob0(TimeExpressionType timeExpressionType, List<Long> appIds) {
 
-        long nowTime = System.currentTimeMillis();
+        long nowTime = Instant.now().toEpochMilli();
         long timeThreshold = nowTime + 2 * SCHEDULE_RATE;
         Lists.partition(appIds, MAX_APP_NUM).forEach(partAppIds -> {
 
@@ -181,7 +182,7 @@ public class PowerScheduleService {
                     long targetTriggerTime = jobInfoDO.getNextTriggerTime();
                     long delay = 0;
                     if (targetTriggerTime < nowTime) {
-                        log.warn("[Job-{}] schedule delay, expect: {}, current: {}", jobInfoDO.getId(), targetTriggerTime, System.currentTimeMillis());
+                        log.warn("[Job-{}] schedule delay, expect: {}, current: {}", jobInfoDO.getId(), targetTriggerTime, Instant.now().toEpochMilli());
                     } else {
                         delay = targetTriggerTime - nowTime;
                     }
@@ -208,7 +209,7 @@ public class PowerScheduleService {
 
     private void scheduleWorkflowCore(List<Long> appIds) {
 
-        long nowTime = System.currentTimeMillis();
+        long nowTime = Instant.now().toEpochMilli();
         long timeThreshold = nowTime + 2 * SCHEDULE_RATE;
         Lists.partition(appIds, MAX_APP_NUM).forEach(partAppIds -> {
             List<WorkflowInfoDO> wfInfos = workflowInfoRepository.findByAppIdInAndStatusAndTimeExpressionTypeAndNextTriggerTimeLessThanEqual(partAppIds, SwitchableStatus.ENABLE.getV(), TimeExpressionType.CRON.getV(), timeThreshold);
@@ -223,9 +224,9 @@ public class PowerScheduleService {
                 Long wfInstanceId = workflowInstanceManager.create(wfInfo, null, wfInfo.getNextTriggerTime(), null);
 
                 // 2. 推入时间轮，准备调度执行
-                long delay = wfInfo.getNextTriggerTime() - System.currentTimeMillis();
+                long delay = wfInfo.getNextTriggerTime() - Instant.now().toEpochMilli();
                 if (delay < 0) {
-                    log.warn("[Workflow-{}] workflow schedule delay, expect:{}, actual: {}", wfInfo.getId(), wfInfo.getNextTriggerTime(), System.currentTimeMillis());
+                    log.warn("[Workflow-{}] workflow schedule delay, expect:{}, actual: {}", wfInfo.getId(), wfInfo.getNextTriggerTime(), Instant.now().toEpochMilli());
                     delay = 0;
                 }
                 InstanceTimeWheelService.schedule(wfInstanceId, delay, () -> workflowInstanceManager.start(wfInfo, wfInstanceId));
@@ -270,15 +271,15 @@ public class PowerScheduleService {
                     jobInfoOpt.ifPresent(jobInfoDO -> {
                         LifeCycle lifeCycle = LifeCycle.parse(jobInfoDO.getLifecycle());
                         // 生命周期已经结束
-                        if (lifeCycle.getEnd() != null && lifeCycle.getEnd() < System.currentTimeMillis()) {
+                        if (lifeCycle.getEnd() != null && lifeCycle.getEnd() < Instant.now().toEpochMilli()) {
                             jobInfoDO.setStatus(SwitchableStatus.DISABLE.getV());
                             jobInfoDO.setGmtModified(new Date());
                             jobInfoRepository.saveAndFlush(jobInfoDO);
                             log.info("[FrequentScheduler] disable frequent job,id:{}.", jobInfoDO.getId());
-                        } else if (lifeCycle.getStart() == null || lifeCycle.getStart() < System.currentTimeMillis() + SCHEDULE_RATE * 2) {
+                        } else if (lifeCycle.getStart() == null || lifeCycle.getStart() < Instant.now().toEpochMilli() + SCHEDULE_RATE * 2) {
                             log.info("[FrequentScheduler] schedule frequent job,id:{}.", jobInfoDO.getId());
                             RunJobRequest runJobRequest = new RunJobRequest()
-                                    .setAppId(jobInfoDO.getAppId()).setJobId(jobId).setDelay(Optional.ofNullable(lifeCycle.getStart()).orElse(0L) - System.currentTimeMillis());
+                                    .setAppId(jobInfoDO.getAppId()).setJobId(jobId).setDelay(Optional.ofNullable(lifeCycle.getStart()).orElse(0L) - Instant.now().toEpochMilli());
                             jobService.runJob(runJobRequest.getAppId(), runJobRequest);
                         }
                     });

@@ -1,5 +1,6 @@
 package tech.powerjob.samples.tester;
 
+import java.time.Instant;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.collect.Sets;
@@ -44,7 +45,7 @@ public class JobRepetitiveExecutionTester implements BasicProcessor {
         final Long instanceId = context.getInstanceId();
         omsLogger.info("[SimpleJobRepetitiveExecutionTester] jobId: {}, instanceId: {}, subInstanceId: {}", context.getJobParams(), instanceId, context.getSubInstanceId());
         check(context);
-        return new ProcessResult(true, "success: " + System.currentTimeMillis());
+        return new ProcessResult(true, "success: " + Instant.now().toEpochMilli());
     }
 
     private synchronized void check(TaskContext context) {

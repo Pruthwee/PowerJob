@@ -1,5 +1,6 @@
 package tech.powerjob.worker.persistence;
 
+import java.time.Instant;
 import lombok.Getter;
 import lombok.Setter;
 import org.apache.commons.lang3.StringUtils;
@@ -86,7 +87,7 @@ public class TaskDO {
         if (lastReportTime != null) {
             sb.append(" last_report_time = ").append(lastReportTime).append(",");
         }
-        sb.append(" last_modified_time = ").append(lastModifiedTime == null ? System.currentTimeMillis() : lastModifiedTime);
+        sb.append(" last_modified_time = ").append(lastModifiedTime == null ? Instant.now().toEpochMilli() : lastModifiedTime);
         return sb.toString();
     }
 

@@ -1,5 +1,6 @@
 package tech.powerjob.server.core.workflow;
 
+import java.time.Instant;
 import com.alibaba.fastjson.JSON;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
@@ -277,7 +278,7 @@ public class WorkflowService {
         requireNotDeleted(wfInfo);
 
         log.info("[WorkflowService-{}] try to run workflow, initParams={},delay={} ms.", wfInfo.getId(), initParams, delay);
-        Long wfInstanceId = workflowInstanceManager.create(wfInfo, initParams, System.currentTimeMillis() + delay, null);
+        Long wfInstanceId = workflowInstanceManager.create(wfInfo, initParams, Instant.now().toEpochMilli() + delay, null);
         if (delay <= 0) {
             workflowInstanceManager.start(wfInfo, wfInstanceId);
         } else {

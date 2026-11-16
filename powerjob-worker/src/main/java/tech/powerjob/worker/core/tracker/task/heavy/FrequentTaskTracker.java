@@ -1,5 +1,6 @@
 package tech.powerjob.worker.core.tracker.task.heavy;
 
+import java.time.Instant;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
@@ -171,7 +172,7 @@ public class FrequentTaskTracker extends HeavyTaskTracker {
             // 执行记录缓存（只做展示，因此可以放在前面）
             SubInstanceInfo subInstanceInfo = new SubInstanceInfo();
             subInstanceInfo.status = TaskStatus.DISPATCH_SUCCESS_WORKER_UNCHECK.getValue();
-            subInstanceInfo.startTime = System.currentTimeMillis();
+            subInstanceInfo.startTime = Instant.now().toEpochMilli();
             recentSubInstanceInfo.put(subInstanceId, subInstanceInfo);
 
             String myAddress = workerRuntime.getWorkerAddress();
@@ -188,8 +189,8 @@ public class FrequentTaskTracker extends HeavyTaskTracker {
             // 根任务总是默认本机执行
             newRootTask.setAddress(myAddress);
             newRootTask.setTaskName(TaskConstant.ROOT_TASK_NAME);
-            newRootTask.setCreatedTime(System.currentTimeMillis());
-            newRootTask.setLastModifiedTime(System.currentTimeMillis());
+            newRootTask.setCreatedTime(Instant.now().toEpochMilli());
+            newRootTask.setLastModifiedTime(Instant.now().toEpochMilli());
             newRootTask.setLastReportTime(-1L);
 
             // 判断是否超出最大执行实例数
@@ -212,7 +213,7 @@ public class FrequentTaskTracker extends HeavyTaskTracker {
 
             // 生成记录信息（必须保证持久化成功才能生成该记录，否则会导致 LAUNCH_FAILED 错误）
             SubInstanceTimeHolder timeHolder = new SubInstanceTimeHolder();
-            timeHolder.startTime = System.currentTimeMillis();
+            timeHolder.startTime = Instant.now().toEpochMilli();
             subInstanceId2TimeHolder.put(subInstanceId, timeHolder);
 
             dispatchTask(newRootTask, myAddress);
@@ -263,7 +264,7 @@ public class FrequentTaskTracker extends HeavyTaskTracker {
 
             ExecuteType executeType = ExecuteType.valueOf(instanceInfo.getExecuteType());
             long instanceTimeoutMS = instanceInfo.getInstanceTimeoutMS();
-            long nowTS = System.currentTimeMillis();
+            long nowTS = Instant.now().toEpochMilli();
 
             Iterator<Map.Entry<Long, SubInstanceTimeHolder>> iterator = subInstanceId2TimeHolder.entrySet().iterator();
             while (iterator.hasNext()) {
@@ -344,7 +345,7 @@ public class FrequentTaskTracker extends HeavyTaskTracker {
             req.setAppId(workerRuntime.getAppId());
             req.setJobId(instanceInfo.getJobId());
             req.setInstanceId(instanceId);
-            req.setReportTime(System.currentTimeMillis());
+            req.setReportTime(Instant.now().toEpochMilli());
             req.setStartTime(createTime);
             req.setInstanceStatus(InstanceStatus.RUNNING.getV());
 
@@ -374,7 +375,7 @@ public class FrequentTaskTracker extends HeavyTaskTracker {
     }
 
     private void processFinishedSubInstance(long subInstanceId, boolean success, String result) {
-        long currentTime = System.currentTimeMillis();
+        long currentTime = Instant.now().toEpochMilli();
         if (success) {
             succeedTimes.incrementAndGet();
         } else {

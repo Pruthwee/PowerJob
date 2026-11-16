@@ -35,7 +35,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import static org.junit.jupiter.api.Assertions.*;
 
 class ClientTransportCompatibilityTest {
-    private static final String STORE_PASSWORD = "local-fixture-only";
+    private static final String STORE_PASSWORD = "fixture-" + java.util.UUID.randomUUID();
     private static final byte[] AUTH = bytes("{\"success\":true,\"data\":{\"appId\":17,\"token\":\"local-fixture-token\"}}");
     private static final byte[] ID = bytes("{\"success\":true,\"data\":9007199254740993}");
     @TempDir static Path directory;

@@ -1,5 +1,6 @@
 package tech.powerjob.worker.core.tracker.task.heavy;
 
+import java.time.Instant;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.google.common.base.Stopwatch;
 import com.google.common.cache.Cache;
@@ -289,8 +290,8 @@ public abstract class HeavyTaskTracker extends TaskTracker {
             task.setInstanceId(instanceId);
             task.setStatus(TaskStatus.WAITING_DISPATCH.getValue());
             task.setFailedCnt(0);
-            task.setLastModifiedTime(System.currentTimeMillis());
-            task.setCreatedTime(System.currentTimeMillis());
+            task.setLastModifiedTime(Instant.now().toEpochMilli());
+            task.setCreatedTime(Instant.now().toEpochMilli());
             task.setLastReportTime(-1L);
         });
 
@@ -315,7 +316,7 @@ public abstract class HeavyTaskTracker extends TaskTracker {
             List<TaskDO> unfinishedTask = taskPersistenceService.getAllUnFinishedTaskByAddress(instanceId, idlePtAddress);
             if (!CollectionUtils.isEmpty(unfinishedTask)) {
                 log.warn("[TaskTracker-{}] ProcessorTracker({}) is idle now but have unfinished tasks: {}", instanceId, idlePtAddress, unfinishedTask);
-                unfinishedTask.forEach(task -> updateTaskStatus(task.getSubInstanceId(), task.getTaskId(), TaskStatus.WORKER_PROCESS_FAILED.getValue(), System.currentTimeMillis(), "SYSTEM: unreceived process result"));
+                unfinishedTask.forEach(task -> updateTaskStatus(task.getSubInstanceId(), task.getTaskId(), TaskStatus.WORKER_PROCESS_FAILED.getValue(), Instant.now().toEpochMilli(), "SYSTEM: unreceived process result"));
             }
         }
     }

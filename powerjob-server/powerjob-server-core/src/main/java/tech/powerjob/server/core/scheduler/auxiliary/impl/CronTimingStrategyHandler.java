@@ -52,7 +52,7 @@ public class CronTimingStrategyHandler implements TimingStrategyHandler {
     public Long calculateNextTriggerTime(Long preTriggerTime, String timeExpression, Long startTime, Long endTime) {
         Cron cron = cronParser.parse(timeExpression);
         ExecutionTime executionTime = ExecutionTime.forCron(cron);
-        if (startTime != null && startTime > System.currentTimeMillis() && preTriggerTime < startTime) {
+        if (startTime != null && startTime > Instant.now().toEpochMilli() && preTriggerTime < startTime) {
             // 需要计算出离 startTime 最近的一次真正的触发时间
             Optional<ZonedDateTime> zonedDateTime = executionTime.lastExecution(ZonedDateTime.ofInstant(Instant.ofEpochMilli(startTime), ZoneId.systemDefault()));
             preTriggerTime = zonedDateTime.map(dateTime -> dateTime.toEpochSecond() * 1000).orElse(startTime);

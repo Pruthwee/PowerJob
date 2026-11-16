@@ -19,6 +19,8 @@ import java.util.Map;
  */
 public class TaskDAOImpl implements TaskDAO {
 
+    private static final int STATEMENT_QUERY_TIMEOUT_SECONDS = 60;
+
     private final boolean useIndex;
     private final ConnectionFactory connectionFactory;
 
@@ -42,6 +44,7 @@ public class TaskDAOImpl implements TaskDAO {
         String createIndexSQL = "create INDEX idx_status ON task_info (status)";
 
         try (Connection conn = connectionFactory.getConnection(); Statement stat = conn.createStatement()) {
+            stat.setQueryTimeout(STATEMENT_QUERY_TIMEOUT_SECONDS);
             stat.execute(delTableSQL);
             stat.execute(createTableSQL);
             if (useIndex) {
@@ -88,6 +91,7 @@ public class TaskDAOImpl implements TaskDAO {
         String deleteSQL = "delete from task_info where %s";
         String sql = String.format(deleteSQL, condition.getQueryCondition());
         try (Connection conn = connectionFactory.getConnection(); Statement stat = conn.createStatement()) {
+            stat.setQueryTimeout(STATEMENT_QUERY_TIMEOUT_SECONDS);
             stat.executeUpdate(sql);
             return true;
         }

@@ -1,5 +1,6 @@
 package tech.powerjob.server.common.timewheel.holder;
 
+import java.time.Instant;
 import tech.powerjob.common.utils.SysUtils;
 import tech.powerjob.server.common.timewheel.HashedWheelTimer;
 import tech.powerjob.server.common.timewheel.Timer;
@@ -50,10 +51,10 @@ public class InstanceTimeWheelService {
             return;
         }
 
-        long expectTriggerTime = System.currentTimeMillis() + delayMS;
+        long expectTriggerTime = Instant.now().toEpochMilli() + delayMS;
         TimerFuture longDelayTask = SLOW_TIMER.schedule(() -> {
             CARGO.remove(uniqueId);
-            realSchedule(uniqueId, expectTriggerTime - System.currentTimeMillis(), timerTask);
+            realSchedule(uniqueId, expectTriggerTime - Instant.now().toEpochMilli(), timerTask);
         }, delayMS - LONG_DELAY_THRESHOLD_MS, TimeUnit.MILLISECONDS);
         CARGO.put(uniqueId, longDelayTask);
     }

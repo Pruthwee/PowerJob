@@ -1,5 +1,6 @@
 package tech.powerjob.common.serialize;
 
+import java.time.Instant;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.SneakyThrows;
@@ -52,7 +53,7 @@ class JsonUtilsTest {
         String originJsonStr = JsonUtils.toJSONString(personPlus);
 
         Map<String, Object> personPlusMapMore = JsonUtils.parseMap(originJsonStr);
-        personPlusMapMore.put("extraKey", System.currentTimeMillis());
+        personPlusMapMore.put("extraKey", Instant.now().toEpochMilli());
 
         PersonPlus personPlusByMoreFieldsJsonStr = JsonUtils.parseObject(JsonUtils.toJSONString(personPlusMapMore), PersonPlus.class);
         assert personPlusByMoreFieldsJsonStr.equals(personPlus);

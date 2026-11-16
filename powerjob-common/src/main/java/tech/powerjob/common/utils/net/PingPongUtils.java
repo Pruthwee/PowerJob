@@ -4,6 +4,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 
 import java.io.*;
+import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.net.UnknownHostException;
 import java.nio.charset.StandardCharsets;
@@ -20,6 +21,9 @@ public class PingPongUtils {
     static final String PING = "ping";
     static final String PONG = "pong";
 
+    private static final int CONNECT_TIMEOUT_MS = 5000;
+    private static final int READ_TIMEOUT_MS = 2000;
+
     /**
      * 验证目标 IP 和 端口的连通性
      * @param targetIp 目标 IP
@@ -28,20 +32,24 @@ public class PingPongUtils {
      */
     public static boolean checkConnectivity(String targetIp, int targetPort) {
 
-        try (Socket s = new Socket(targetIp, targetPort);InputStream is = s.getInputStream();OutputStream os = s.getOutputStream();BufferedReader br = new BufferedReader(new InputStreamReader(is))) {
+        try (Socket s = new Socket()) {
 
-            s.setSoTimeout(2000);
+            s.connect(new InetSocketAddress(targetIp, targetPort), CONNECT_TIMEOUT_MS);
+            s.setSoTimeout(READ_TIMEOUT_MS);
             s.setKeepAlive(false);
 
-            // 发送 PING 请求
-            os.write(PING.getBytes(StandardCharsets.UTF_8));
-            os.flush();
+            try (InputStream is = s.getInputStream(); OutputStream os = s.getOutputStream(); BufferedReader br = new BufferedReader(new InputStreamReader(is))) {
 
-            //读取服务器返回的消息
-            String content = br.readLine();
+                // 发送 PING 请求
+                os.write(PING.getBytes(StandardCharsets.UTF_8));
+                os.flush();
 
-            if (PONG.equalsIgnoreCase(content)) {
-                return true;
+                //读取服务器返回的消息
+                String content = br.readLine();
+
+                if (PONG.equalsIgnoreCase(content)) {
+                    return true;
+                }
             }
         } catch (UnknownHostException e) {
             log.warn("[SocketConnectivityUtils] unknown host: {}:{}", targetIp, targetPort);

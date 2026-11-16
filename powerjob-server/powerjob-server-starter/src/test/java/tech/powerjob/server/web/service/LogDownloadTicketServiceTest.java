@@ -1,5 +1,6 @@
 package tech.powerjob.server.web.service;
 
+import java.time.Instant;
 import org.apache.commons.collections4.MapUtils;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -63,13 +64,13 @@ class LogDownloadTicketServiceTest {
     @Test
     void compatibilityClaimDeadlineAndDomainRemainThePublishedFormat() {
         JwtService node = jwt("jdbc:mysql://shared/db", SHARED_SECRET);
-        long before = System.currentTimeMillis();
+        long before = Instant.now().toEpochMilli();
         String ticket = issuer(node).issue(7L, INSTANCE_ID);
         Map<String, Object> claims = node.parse(ticket, "InstanceLogDownload").getResult();
         assertEquals("InstanceLogDownload", claims.get("scope"));
         long expires = MapUtils.getLong(claims, "downloadExpiresAt");
         assertTrue(expires >= before + 300000);
-        assertTrue(expires <= System.currentTimeMillis() + 300000);
+        assertTrue(expires <= Instant.now().toEpochMilli() + 300000);
         assertThrows(PowerJobException.class, () -> validator(node).validate(ticket, INSTANCE_ID + 1));
     }
 
@@ -123,7 +124,7 @@ class LogDownloadTicketServiceTest {
             }
             Map<String, Object> claims = parsed.getResult();
             Long expires = MapUtils.getLong(claims, "downloadExpiresAt");
-            if (!SIGNING_SCOPE.equals(claims.get("scope")) || expires == null || expires <= System.currentTimeMillis()
+            if (!SIGNING_SCOPE.equals(claims.get("scope")) || expires == null || expires <= Instant.now().toEpochMilli()
                     || !Objects.equals(instanceId, MapUtils.getLong(claims, "instanceId"))) {
                 throw invalidTicket();
             }

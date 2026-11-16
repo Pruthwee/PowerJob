@@ -1,5 +1,6 @@
 package tech.powerjob.server.remote.server.election;
 
+import java.time.Instant;
 import com.alibaba.fastjson.JSONObject;
 import com.google.common.collect.Sets;
 import lombok.extern.slf4j.Slf4j;
@@ -145,7 +146,7 @@ public class ServerElectionService {
         }
 
         Ping ping = new Ping();
-        ping.setCurrentTime(System.currentTimeMillis());
+        ping.setCurrentTime(Instant.now().toEpochMilli());
 
         URL targetUrl = ServerURLFactory.ping2Friend(serverAddress);
         try {

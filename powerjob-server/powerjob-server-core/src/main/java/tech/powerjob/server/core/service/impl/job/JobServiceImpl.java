@@ -1,5 +1,6 @@
 package tech.powerjob.server.core.service.impl.job;
 
+import java.time.Instant;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import lombok.RequiredArgsConstructor;
@@ -186,7 +187,7 @@ public class JobServiceImpl implements JobService {
         log.info("[Job-{}] try to run job in app[{}], instanceParams={},delay={} ms,outerKey={}", jobInfo.getId(), appId, instanceParams, delay, outerKey);
 
         final InstanceInfoDO instanceInfo = instanceService.create(jobInfo.getId(), jobInfo.getAppId(), jobInfo.getJobParams(),
-                instanceParams, null, System.currentTimeMillis() + Math.max(delay, 0),
+                instanceParams, null, Instant.now().toEpochMilli() + Math.max(delay, 0),
                 outerKey, runJobRequest.getExtendValue()
         );
         instanceInfoRepository.flush();
@@ -231,7 +232,7 @@ public class JobServiceImpl implements JobService {
         final JobInfoDO jobInfoDO = jobInfoOpt.get();
         final SaveJobInfoRequest saveJobInfoRequest = JobConverter.convertJobInfoDO2SaveJobInfoRequest(jobInfoDO);
         saveJobInfoRequest.setId(null);
-        saveJobInfoRequest.setJobName(saveJobInfoRequest.getJobName() + "_EXPORT_" + System.currentTimeMillis());
+        saveJobInfoRequest.setJobName(saveJobInfoRequest.getJobName() + "_EXPORT_" + Instant.now().toEpochMilli());
         log.info("[Job-{}] [exportJob] jobInfoDO: {}, saveJobInfoRequest: {}", jobId, JsonUtils.toJSONString(jobInfoDO), JsonUtils.toJSONString(saveJobInfoRequest));
         return saveJobInfoRequest;
     }

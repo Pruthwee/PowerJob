@@ -1,5 +1,6 @@
 package tech.powerjob.server.test;
 
+import java.time.Instant;
 import org.junit.jupiter.api.Test;
 import tech.powerjob.server.common.timewheel.HashedWheelTimer;
 import tech.powerjob.server.common.timewheel.TimerFuture;
@@ -32,7 +33,7 @@ public class HashedWheelTimerTest {
         for (int i = 0; i < 10; i++) {
 
             String name = "Task" + i;
-            long nowMS = System.currentTimeMillis();
+            long nowMS = Instant.now().toEpochMilli();
             int delayMS = ThreadLocalRandom.current().nextInt(60000);
             long targetTime = delayMS + nowMS;
 
@@ -40,8 +41,8 @@ public class HashedWheelTimerTest {
                 System.out.println("============= " + name + "============= ");
                 System.out.println("ThreadInfo:" + Thread.currentThread().getName());
                 System.out.println("expectTime:" + targetTime);;
-                System.out.println("currentTime:" + System.currentTimeMillis());
-                System.out.println("deviation:" + (System.currentTimeMillis() - targetTime));
+                System.out.println("currentTime:" + Instant.now().toEpochMilli());
+                System.out.println("deviation:" + (Instant.now().toEpochMilli() - targetTime));
                 System.out.println("============= " + name + "============= ");
             };
             futures.add(timer.schedule(timerTask, delayMS, TimeUnit.MILLISECONDS));
@@ -71,9 +72,9 @@ public class HashedWheelTimerTest {
         Stopwatch sw = Stopwatch.createStarted();
         for (long i = 0; i < 10; i++) {
             long delay = ThreadLocalRandom.current().nextLong(100, 120000);
-            long expect = System.currentTimeMillis() + delay;
+            long expect = Instant.now().toEpochMilli() + delay;
             InstanceTimeWheelService.schedule(i, delay, () -> {
-               log.info("[Performance] deviation:{}", (System.currentTimeMillis() - expect));
+               log.info("[Performance] deviation:{}", (Instant.now().toEpochMilli() - expect));
             });
         }
         log.info("[Performance] insert cost: {}", sw);
@@ -85,9 +86,9 @@ public class HashedWheelTimerTest {
     public void testLongDelayTask() throws Exception {
         for (long i = 0; i < 10; i++) {
             long delay = ThreadLocalRandom.current().nextLong(60000, 60000 * 3);
-            long expect = System.currentTimeMillis() + delay;
+            long expect = Instant.now().toEpochMilli() + delay;
             InstanceTimeWheelService.schedule(i, delay, () -> {
-                log.info("[LongDelayTask] deviation: {}", (System.currentTimeMillis() - expect));
+                log.info("[LongDelayTask] deviation: {}", (Instant.now().toEpochMilli() - expect));
             });
         }
 
@@ -101,10 +102,10 @@ public class HashedWheelTimerTest {
         AtomicLong cancelNum = new AtomicLong();
         for (long i = 0; i < 10; i++) {
             long delay = ThreadLocalRandom.current().nextLong(60000, 60000 * 2);
-            long expect = System.currentTimeMillis() + delay;
+            long expect = Instant.now().toEpochMilli() + delay;
             InstanceTimeWheelService.schedule(i, delay, () -> {
                 executeNum.incrementAndGet();
-                log.info("[CancelLongDelayTask] deviation: {}", (System.currentTimeMillis() - expect));
+                log.info("[CancelLongDelayTask] deviation: {}", (Instant.now().toEpochMilli() - expect));
             });
         }
 

@@ -124,7 +124,7 @@ class ConfiguredJwtSecretTest {
 
     @Test
     void databaseUrlAndDerivedKeyDoNotAppearAtDebugLevel() {
-        String url = "jdbc:mysql://localhost/db?password=synthetic-canary";
+        String url = "jdbc:mysql://localhost/db?password=fixture-" + java.util.UUID.randomUUID();
         Logger logger = (Logger) LoggerFactory.getLogger(DefaultSecretProvider.class);
         Level previous = logger.getLevel();
         ListAppender<ILoggingEvent> appender = new ListAppender<>();

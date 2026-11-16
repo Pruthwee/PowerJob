@@ -1,5 +1,6 @@
 package tech.powerjob.worker.background.heartbeat;
 
+import java.time.Instant;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -46,7 +47,7 @@ public class WorkerHealthReporter extends SafeRunnable {
         heartbeat.setWorkerAddress(workerRuntime.getWorkerAddress());
         heartbeat.setAppName(workerRuntime.getWorkerConfig().getAppName());
         heartbeat.setAppId(workerRuntime.getAppId());
-        heartbeat.setHeartbeatTime(System.currentTimeMillis());
+        heartbeat.setHeartbeatTime(Instant.now().toEpochMilli());
         heartbeat.setVersion(PowerJobWorkerVersion.getVersion());
         heartbeat.setProtocol(workerRuntime.getWorkerConfig().getProtocol().name());
         heartbeat.setClient("KingPenguin");

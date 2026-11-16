@@ -11,7 +11,7 @@ import java.util.stream.Collectors;
 import static org.junit.jupiter.api.Assertions.*;
 
 class StorageCredentialLoggingTest {
-    private static final String CANARY = "synthetic-credential-canary";
+    private static final String CANARY = "fixture-" + java.util.UUID.randomUUID();
 
     @Test
     void minioValidationFailureDoesNotDiscloseKeys() {

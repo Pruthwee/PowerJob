@@ -1,5 +1,6 @@
 package tech.powerjob.server.core.instance;
 
+import java.time.Instant;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
@@ -114,7 +115,7 @@ public class InstanceLogService {
     public void submitLogs(String workerAddress, List<InstanceLogContent> logs) {
 
         List<LocalInstanceLogDO> logList = logs.stream().map(x -> {
-            instanceId2LastReportTime.put(x.getInstanceId(), System.currentTimeMillis());
+            instanceId2LastReportTime.put(x.getInstanceId(), Instant.now().toEpochMilli());
 
             LocalInstanceLogDO y = new LocalInstanceLogDO();
             BeanUtils.copyProperties(x, y);
@@ -264,7 +265,7 @@ public class InstanceLogService {
             return localTransactionTemplate.execute(status -> {
                 File f = new File(path);
                 // 如果文件存在且有效，则不再重新构建日志文件（这个判断也需要放在锁内，否则构建到一半的文件会被返回）
-                if (f.exists() && (System.currentTimeMillis() - f.lastModified()) < LOG_CACHE_TIME) {
+                if (f.exists() && (Instant.now().toEpochMilli() - f.lastModified()) < LOG_CACHE_TIME) {
                     return f;
                 }
                 try {
@@ -404,7 +405,7 @@ public class InstanceLogService {
 
         if (!CollectionUtils.isEmpty(frequentInstanceIds)) {
             // 只保留最近10分钟的日志
-            long time = System.currentTimeMillis() - 10 * 60 * 1000;
+            long time = Instant.now().toEpochMilli() - 10 * 60 * 1000;
             Lists.partition(frequentInstanceIds, 100).forEach(p -> {
                 try {
                     localInstanceLogRepository.deleteByInstanceIdInAndLogTimeLessThan(p, time);

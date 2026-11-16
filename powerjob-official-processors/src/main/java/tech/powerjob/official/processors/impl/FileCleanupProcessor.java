@@ -1,5 +1,6 @@
 package tech.powerjob.official.processors.impl;
 
+import java.time.Instant;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import tech.powerjob.official.processors.util.SecurityUtils;
@@ -82,7 +83,7 @@ public class FileCleanupProcessor implements BroadcastProcessor {
                 }
 
                 // last modify time interval, xxx hours
-                int interval = (int) Math.ceil((System.currentTimeMillis() - file.lastModified()) / 3600000.0);
+                int interval = (int) Math.ceil((Instant.now().toEpochMilli() - file.lastModified()) / 3600000.0);
                 if (interval < params.retentionTime) {
                     logger.info("file[{}] won't be deleted because it does not meet the time requirement", filePath);
                     return;

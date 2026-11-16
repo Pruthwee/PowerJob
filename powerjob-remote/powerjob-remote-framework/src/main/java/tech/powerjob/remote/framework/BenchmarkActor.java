@@ -1,5 +1,6 @@
 package tech.powerjob.remote.framework;
 
+import java.time.Instant;
 import lombok.Data;
 import lombok.experimental.Accessors;
 import lombok.extern.slf4j.Slf4j;
@@ -23,18 +24,18 @@ public class BenchmarkActor {
 
     @Handler(path = "standard")
     public BenchmarkResponse standardRequest(BenchmarkRequest request) {
-        long startTs = System.currentTimeMillis();
+        long startTs = Instant.now().toEpochMilli();
         log.info("[BenchmarkActor] [standardRequest] receive request: {}", request);
         BenchmarkResponse response = new BenchmarkResponse()
                 .setSuccess(true)
                 .setContent(request.getContent())
                 .setProcessThread(Thread.currentThread().getName())
-                .setServerReceiveTs(System.currentTimeMillis());
+                .setServerReceiveTs(Instant.now().toEpochMilli());
         if (request.getResponseSize() != null && request.getResponseSize() > 0) {
             response.setExtra(RandomStringUtils.randomPrint(request.getResponseSize()));
         }
         executeSleep(request);
-        response.setServerCost(System.currentTimeMillis() - startTs);
+        response.setServerCost(Instant.now().toEpochMilli() - startTs);
         return response;
     }
 

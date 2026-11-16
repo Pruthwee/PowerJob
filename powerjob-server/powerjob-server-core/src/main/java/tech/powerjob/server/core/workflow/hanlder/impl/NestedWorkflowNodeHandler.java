@@ -1,5 +1,6 @@
 package tech.powerjob.server.core.workflow.hanlder.impl;
 
+import java.time.Instant;
 import com.alibaba.fastjson.JSON;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -75,10 +76,10 @@ public class NestedWorkflowNodeHandler implements TaskNodeHandler {
         } else {
             // 透传当前的上下文创建新的工作流实例
             String wfContext = wfInstanceInfo.getWfContext();
-            Long instanceId = SpringUtils.getBean(WorkflowInstanceManager.class).create(targetWf, wfContext, System.currentTimeMillis(), wfInstanceInfo.getWfInstanceId());
+            Long instanceId = SpringUtils.getBean(WorkflowInstanceManager.class).create(targetWf, wfContext, Instant.now().toEpochMilli(), wfInstanceInfo.getWfInstanceId());
             node.setInstanceId(instanceId);
         }
-        node.setStartTime(CommonUtils.formatTime(System.currentTimeMillis()));
+        node.setStartTime(CommonUtils.formatTime(Instant.now().toEpochMilli()));
         node.setStatus(InstanceStatus.RUNNING.getV());
     }
 

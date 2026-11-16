@@ -1,5 +1,6 @@
 package tech.powerjob.server.remote.server.self;
 
+import java.time.Instant;
 import com.google.common.base.Stopwatch;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -49,7 +50,7 @@ public class ServerInfoServiceImpl implements ServerInfoService {
 
         String ip = NetUtils.getLocalHost();
         serverInfo.setIp(ip);
-        serverInfo.setBornTime(System.currentTimeMillis());
+        serverInfo.setBornTime(Instant.now().toEpochMilli());
         this.serverInfoRepository = serverInfoRepository;
 
         Stopwatch sw = Stopwatch.createStarted();

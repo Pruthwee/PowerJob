@@ -1,5 +1,6 @@
 package tech.powerjob.server.web.controller;
 
+import java.time.Instant;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import lombok.RequiredArgsConstructor;
@@ -82,8 +83,8 @@ public class ServerController implements ServerInfoAware {
         JSONObject res = new JSONObject();
         res.put("localHost", serverInfo.getIp());
         res.put("serverInfo", serverInfo);
-        res.put("serverTime", CommonUtils.formatTime(System.currentTimeMillis()));
-        res.put("serverTimeTs", System.currentTimeMillis());
+        res.put("serverTime", CommonUtils.formatTime(Instant.now().toEpochMilli()));
+        res.put("serverTimeTs", Instant.now().toEpochMilli());
         res.put("serverTimeZone", TimeZone.getDefault().getDisplayName());
         res.put("appIds", workerClusterQueryService.getAppId2ClusterStatus().keySet());
         if (debug) {

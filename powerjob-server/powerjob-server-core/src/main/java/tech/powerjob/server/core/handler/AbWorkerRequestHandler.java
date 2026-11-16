@@ -1,5 +1,6 @@
 package tech.powerjob.server.core.handler;
 
+import java.time.Instant;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.exception.ExceptionUtils;
@@ -61,7 +62,7 @@ public abstract class AbWorkerRequestHandler implements IWorkerRequestHandler {
     @Override
     @Handler(path = S4W_HANDLER_WORKER_HEARTBEAT, processType = ProcessType.NO_BLOCKING)
     public void processWorkerHeartbeat(WorkerHeartbeat heartbeat) {
-        long startMs = System.currentTimeMillis();
+        long startMs = Instant.now().toEpochMilli();
         WorkerHeartbeatEvent event = new WorkerHeartbeatEvent()
                 .setAppName(heartbeat.getAppName())
                 .setAppId(heartbeat.getAppId())
@@ -78,7 +79,7 @@ public abstract class AbWorkerRequestHandler implements IWorkerRequestHandler {
     @Override
     @Handler(path = S4W_HANDLER_REPORT_INSTANCE_STATUS, processType = ProcessType.BLOCKING)
     public AskResponse processTaskTrackerReportInstanceStatus(TaskTrackerReportInstanceStatusReq req) {
-        long startMs = System.currentTimeMillis();
+        long startMs = Instant.now().toEpochMilli();
         TtReportInstanceStatusEvent event = new TtReportInstanceStatusEvent()
                 .setAppId(req.getAppId())
                 .setJobId(req.getJobId())
@@ -94,7 +95,7 @@ public abstract class AbWorkerRequestHandler implements IWorkerRequestHandler {
             log.error("[WorkerRequestHandler] processTaskTrackerReportInstanceStatus failed for request: {}", req, e);
             return AskResponse.failed(ExceptionUtils.getMessage(e));
         } finally {
-            event.setServerProcessCost(System.currentTimeMillis() - startMs);
+            event.setServerProcessCost(Instant.now().toEpochMilli() - startMs);
             monitorService.monitor(event);
         }
     }

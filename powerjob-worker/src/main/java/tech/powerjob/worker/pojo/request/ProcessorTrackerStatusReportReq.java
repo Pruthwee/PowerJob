@@ -1,5 +1,6 @@
 package tech.powerjob.worker.pojo.request;
 
+import java.time.Instant;
 import tech.powerjob.common.PowerSerializable;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -43,7 +44,7 @@ public class ProcessorTrackerStatusReportReq implements PowerSerializable {
         ProcessorTrackerStatusReportReq req = new ProcessorTrackerStatusReportReq();
         req.type = IDLE;
         req.instanceId = instanceId;
-        req.time = System.currentTimeMillis();
+        req.time = Instant.now().toEpochMilli();
         req.setRemainTaskNum(0);
         return req;
     }
@@ -52,7 +53,7 @@ public class ProcessorTrackerStatusReportReq implements PowerSerializable {
         ProcessorTrackerStatusReportReq req = new ProcessorTrackerStatusReportReq();
         req.type = LOAD;
         req.instanceId = instanceId;
-        req.time = System.currentTimeMillis();
+        req.time = Instant.now().toEpochMilli();
         req.setRemainTaskNum(remainTaskNum);
         return req;
     }

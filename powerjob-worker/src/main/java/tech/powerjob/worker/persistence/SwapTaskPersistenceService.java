@@ -1,5 +1,6 @@
 package tech.powerjob.worker.persistence;
 
+import java.time.Instant;
 import com.google.common.collect.Lists;
 import lombok.extern.slf4j.Slf4j;
 import tech.powerjob.common.PowerJobDKey;
@@ -261,11 +262,11 @@ public class SwapTaskPersistenceService implements TaskPersistenceService {
 
                     // 走到此处，会满足 DB有可用空间，当文件一直空数据。如果这个过程长期维持，则说明某些地方产生了异常导致判定失准，需要及时止损
                     if (lastExternalPendingEmptyTime < 0) {
-                        lastExternalPendingEmptyTime = System.currentTimeMillis();
+                        lastExternalPendingEmptyTime = Instant.now().toEpochMilli();
                     }
 
                     // 超时机制，处理：DB 存在可导入空间但长期无法拉到数据，同时 externalPendingRecordNum 一直非0导致任务无法判定结束的情况
-                    long offset = System.currentTimeMillis() - lastExternalPendingEmptyTime;
+                    long offset = Instant.now().toEpochMilli() - lastExternalPendingEmptyTime;
                     if (offset > MAX_EXTERNAL_PENDING_WAIT_TIME) {
                         log.warn("[SwapTaskPersistenceService-{}] [moveInPendingTask] Unable to get tasks from external files for a long time, unexpected things may have happened(lastExternalPendingEmptyTime: {}, offsetFromNow: {}). System will reset externalPendingRecordNum so that the task can end(before reset externalPendingRecordNum: {}).", instanceId, lastExternalPendingEmptyTime, offset, externalPendingRecordNum);
                         externalPendingRecordNum.reset();

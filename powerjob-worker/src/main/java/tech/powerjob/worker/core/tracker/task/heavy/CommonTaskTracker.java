@@ -1,5 +1,6 @@
 package tech.powerjob.worker.core.tracker.task.heavy;
 
+import java.time.Instant;
 import com.google.common.collect.Lists;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import lombok.ToString;
@@ -138,8 +139,8 @@ public class CommonTaskTracker extends HeavyTaskTracker {
         rootTask.setFailedCnt(0);
         rootTask.setAddress(workerRuntime.getWorkerAddress());
         rootTask.setTaskName(TaskConstant.ROOT_TASK_NAME);
-        rootTask.setCreatedTime(System.currentTimeMillis());
-        rootTask.setLastModifiedTime(System.currentTimeMillis());
+        rootTask.setCreatedTime(Instant.now().toEpochMilli());
+        rootTask.setLastModifiedTime(Instant.now().toEpochMilli());
         rootTask.setLastReportTime(-1L);
         rootTask.setSubInstanceId(instanceId);
 
@@ -177,7 +178,7 @@ public class CommonTaskTracker extends HeavyTaskTracker {
             req.setTotalTaskNum(finishedNum + unfinishedNum);
             req.setSucceedTaskNum(holder.succeedNum);
             req.setFailedTaskNum(holder.failedNum);
-            req.setReportTime(System.currentTimeMillis());
+            req.setReportTime(Instant.now().toEpochMilli());
             req.setStartTime(createTime);
             req.setSourceAddress(workerRuntime.getWorkerAddress());
 
@@ -268,7 +269,7 @@ public class CommonTaskTracker extends HeavyTaskTracker {
             TransportUtils.ttReportInstanceStatus(req, workerRuntime.getServerDiscoveryService().getCurrentServerAddress(), workerRuntime.getTransporter());
 
             // 6.1 定期检查 -> 重试派发后未确认的任务
-            long currentMS = System.currentTimeMillis();
+            long currentMS = Instant.now().toEpochMilli();
             if (holder.workerUnreceivedNum != 0) {
                 taskPersistenceService.getTaskByStatus(instanceId, TaskStatus.DISPATCH_SUCCESS_WORKER_UNCHECK, 100).forEach(uncheckTask -> {
 
@@ -311,7 +312,7 @@ public class CommonTaskTracker extends HeavyTaskTracker {
          */
         public boolean isTimeout() {
             if (instanceInfo.getInstanceTimeoutMS() > 0) {
-                return System.currentTimeMillis() - createTime > instanceInfo.getInstanceTimeoutMS();
+                return Instant.now().toEpochMilli() - createTime > instanceInfo.getInstanceTimeoutMS();
             }
             return false;
         }

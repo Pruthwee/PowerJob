@@ -1,5 +1,6 @@
 package tech.powerjob.server.core.scheduler;
 
+import java.time.Instant;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.Lists;
 import lombok.RequiredArgsConstructor;
@@ -151,11 +152,11 @@ public class InstanceStatusCheckService {
         List<Long> partAppIds = Lists.newArrayList(appIds);
 
         // 1. 检查等待 WAITING_DISPATCH 状态的任务
-        long threshold = System.currentTimeMillis() - DISPATCH_TIMEOUT_MS;
+        long threshold = Instant.now().toEpochMilli() - DISPATCH_TIMEOUT_MS;
         List<InstanceInfoDO> waitingDispatchInstances = instanceInfoRepository.findAllByAppIdInAndStatusAndExpectedTriggerTimeLessThan(partAppIds, InstanceStatus.WAITING_DISPATCH.getV(), threshold, PageRequest.of(0, MAX_BATCH_NUM_INSTANCE));
         while (!waitingDispatchInstances.isEmpty()) {
             List<Long> overloadAppIdList = new ArrayList<>();
-            long startTime = System.currentTimeMillis();
+            long startTime = Instant.now().toEpochMilli();
             // 按照 appId 分组处理，方便处理超载的逻辑
             Map<Long, List<InstanceInfoDO>> waitingDispatchInstancesMap = waitingDispatchInstances.stream().collect(Collectors.groupingBy(InstanceInfoDO::getAppId));
             for (Map.Entry<Long, List<InstanceInfoDO>> entry : waitingDispatchInstancesMap.entrySet()) {
@@ -183,12 +184,12 @@ public class InstanceStatusCheckService {
                         opt.ifPresent(instanceInfoDO -> updateFailedInstance(instanceInfoDO, SystemInstanceResult.CAN_NOT_FIND_JOB_INFO));
                     }
                 });
-                threshold = System.currentTimeMillis() - DISPATCH_TIMEOUT_MS;
+                threshold = Instant.now().toEpochMilli() - DISPATCH_TIMEOUT_MS;
                 if (overloadFlag.get()) {
                     overloadAppIdList.add(currentAppId);
                 }
             }
-            log.info("[InstanceStatusChecker] process {} task,use {} ms", waitingDispatchInstances.size(), System.currentTimeMillis() - startTime);
+            log.info("[InstanceStatusChecker] process {} task,use {} ms", waitingDispatchInstances.size(), Instant.now().toEpochMilli() - startTime);
             if (!overloadAppIdList.isEmpty()) {
                 log.warn("[InstanceStatusChecker] app[{}] is overload, so skip check waiting dispatch instance", overloadAppIdList);
                 partAppIds.removeAll(overloadAppIdList);
@@ -203,7 +204,7 @@ public class InstanceStatusCheckService {
 
     private void handleWaitingWorkerReceiveInstance(List<Long> partAppIds) {
         // 2. 检查 WAITING_WORKER_RECEIVE 状态的任务
-        long threshold = System.currentTimeMillis() - RECEIVE_TIMEOUT_MS;
+        long threshold = Instant.now().toEpochMilli() - RECEIVE_TIMEOUT_MS;
         List<BriefInstanceInfo> waitingWorkerReceiveInstances = instanceInfoRepository.selectBriefInfoByAppIdInAndStatusAndActualTriggerTimeLessThan(partAppIds, InstanceStatus.WAITING_WORKER_RECEIVE.getV(), threshold, PageRequest.of(0, MAX_BATCH_NUM_INSTANCE));
         while (!waitingWorkerReceiveInstances.isEmpty()) {
             log.warn("[InstanceStatusChecker] find some instance didn't receive any reply from worker, try to redispatch: {}", waitingWorkerReceiveInstances.stream().map(BriefInstanceInfo::getInstanceId).collect(Collectors.toList()));
@@ -212,14 +213,14 @@ public class InstanceStatusCheckService {
                 dispatchService.redispatchBatchAsyncLockFree(partition.stream().map(BriefInstanceInfo::getInstanceId).collect(Collectors.toList()), InstanceStatus.WAITING_WORKER_RECEIVE.getV());
             }
             // 重新查询
-            threshold = System.currentTimeMillis() - RECEIVE_TIMEOUT_MS;
+            threshold = Instant.now().toEpochMilli() - RECEIVE_TIMEOUT_MS;
             waitingWorkerReceiveInstances = instanceInfoRepository.selectBriefInfoByAppIdInAndStatusAndActualTriggerTimeLessThan(partAppIds, InstanceStatus.WAITING_WORKER_RECEIVE.getV(), threshold, PageRequest.of(0, MAX_BATCH_NUM_INSTANCE));
         }
     }
 
     private void handleRunningInstance(List<Long> partAppIds) {
         // 3. 检查 RUNNING 状态的任务（一定时间没收到 TaskTracker 的状态报告，视为失败）
-        long threshold = System.currentTimeMillis() - RUNNING_TIMEOUT_MS;
+        long threshold = Instant.now().toEpochMilli() - RUNNING_TIMEOUT_MS;
         List<BriefInstanceInfo> failedInstances = instanceInfoRepository.selectBriefInfoByAppIdInAndStatusAndGmtModifiedBefore(partAppIds, InstanceStatus.RUNNING.getV(), new Date(threshold), PageRequest.of(0, MAX_BATCH_NUM_INSTANCE));
         while (!failedInstances.isEmpty()) {
             // collect job id
@@ -250,7 +251,7 @@ public class InstanceStatusCheckService {
                     opt.ifPresent(e -> updateFailedInstance(e, SystemInstanceResult.REPORT_TIMEOUT));
                 }
             });
-            threshold = System.currentTimeMillis() - RUNNING_TIMEOUT_MS;
+            threshold = Instant.now().toEpochMilli() - RUNNING_TIMEOUT_MS;
             failedInstances = instanceInfoRepository.selectBriefInfoByAppIdInAndStatusAndGmtModifiedBefore(partAppIds, InstanceStatus.RUNNING.getV(), new Date(threshold), PageRequest.of(0, MAX_BATCH_NUM_INSTANCE));
         }
 
@@ -265,7 +266,7 @@ public class InstanceStatusCheckService {
     private void checkWorkflowInstance(List<Long> allAppIds) {
 
         // 重试长时间处于 WAITING 状态的工作流实例
-        long threshold = System.currentTimeMillis() - WORKFLOW_WAITING_TIMEOUT_MS;
+        long threshold = Instant.now().toEpochMilli() - WORKFLOW_WAITING_TIMEOUT_MS;
         Lists.partition(allAppIds, MAX_BATCH_NUM_APP).forEach(partAppIds -> {
             List<WorkflowInstanceInfoDO> waitingWfInstanceList = workflowInstanceInfoRepository.findByAppIdInAndStatusAndExpectedTriggerTimeLessThan(partAppIds, WorkflowInstanceStatus.WAITING.getV(), threshold);
             if (!CollectionUtils.isEmpty(waitingWfInstanceList)) {
@@ -292,7 +293,7 @@ public class InstanceStatusCheckService {
         log.warn("[InstanceStatusChecker] instance[{}] failed due to {}, instanceInfo: {}", instance.getInstanceId(), result, instance);
 
         instance.setStatus(InstanceStatus.FAILED.getV());
-        instance.setFinishedTime(System.currentTimeMillis());
+        instance.setFinishedTime(Instant.now().toEpochMilli());
         instance.setGmtModified(new Date());
         instance.setResult(result);
         instanceInfoRepository.saveAndFlush(instance);

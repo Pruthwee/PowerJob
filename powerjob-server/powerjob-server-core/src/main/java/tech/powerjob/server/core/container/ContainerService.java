@@ -1,5 +1,6 @@
 package tech.powerjob.server.core.container;
 
+import java.time.Instant;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Multimap;
@@ -248,7 +249,7 @@ public class ContainerService {
 
             Date lastDeployTime = container.getLastDeployTime();
             if (lastDeployTime != null) {
-                if ((System.currentTimeMillis() - lastDeployTime.getTime()) < DEPLOY_MIN_INTERVAL) {
+                if ((Instant.now().toEpochMilli() - lastDeployTime.getTime()) < DEPLOY_MIN_INTERVAL) {
                     remote.sendText("SYSTEM: [warn] deploy too frequent, last deploy time is: " + DateFormatUtils.format(lastDeployTime, OmsConstant.TIME_PATTERN));
                 }
             }

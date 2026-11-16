@@ -1,5 +1,6 @@
 package tech.powerjob.server.core.lock;
 
+import java.time.Instant;
 import com.alibaba.fastjson.JSON;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
@@ -55,10 +56,10 @@ public class UseCacheLockAspect {
         final Method method = AOPUtils.parseMethod(point);
         Long key = AOPUtils.parseSpEl(method, point.getArgs(), useCacheLock.key(), Long.class, 1L);
         final ReentrantLock reentrantLock = lockCache.get(String.valueOf(key), ReentrantLock::new);
-        long start = System.currentTimeMillis();
+        long start = Instant.now().toEpochMilli();
         reentrantLock.lockInterruptibly();
         try {
-            long timeCost = System.currentTimeMillis() - start;
+            long timeCost = Instant.now().toEpochMilli() - start;
             if (timeCost > SLOW_THRESHOLD) {
 
                 final SlowLockEvent slowLockEvent = new SlowLockEvent()

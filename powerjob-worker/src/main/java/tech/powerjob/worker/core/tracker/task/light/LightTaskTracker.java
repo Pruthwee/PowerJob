@@ -1,5 +1,6 @@
 package tech.powerjob.worker.core.tracker.task.light;
 
+import java.time.Instant;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.RandomUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -155,7 +156,7 @@ public class LightTaskTracker extends TaskTracker {
         }
         LightTaskTrackerManager.removeTaskTracker(instanceId);
         // 最后一列为总耗时（即占用资源的耗时，当前时间减去创建时间）
-        log.info("[TaskTracker-{}] remove TaskTracker,task status {},start time:{},end time:{},real cost:{},total time:{}", instanceId, status, taskStartTime, taskEndTime, taskEndTime != null ? taskEndTime - taskStartTime : "unknown", System.currentTimeMillis() - createTime);
+        log.info("[TaskTracker-{}] remove TaskTracker,task status {},start time:{},end time:{},real cost:{},total time:{}", instanceId, status, taskStartTime, taskEndTime, taskEndTime != null ? taskEndTime - taskStartTime : "unknown", Instant.now().toEpochMilli() - createTime);
     }
 
     @Override
@@ -203,7 +204,7 @@ public class LightTaskTracker extends TaskTracker {
     private ProcessResult processTask() {
         executeThread.set(Thread.currentThread());
         // 设置任务开始执行的时间
-        taskStartTime = System.currentTimeMillis();
+        taskStartTime = Instant.now().toEpochMilli();
         status = TaskStatus.WORKER_PROCESSING;
         // 开始执行时，提交任务判断是否超时
         ProcessResult res = null;
@@ -236,7 +237,7 @@ public class LightTaskTracker extends TaskTracker {
             }
         } while (!res.isSuccess() && taskContext.getCurrentRetryTimes() < taskContext.getMaxRetryTimes() && !timeoutFlag.get() && !stopFlag.get());
         executeThread.set(null);
-        taskEndTime = System.currentTimeMillis();
+        taskEndTime = Instant.now().toEpochMilli();
         finished.set(true);
         result = res;
         status = result.isSuccess() ? TaskStatus.WORKER_PROCESS_SUCCESS : TaskStatus.WORKER_PROCESS_FAILED;
@@ -244,7 +245,7 @@ public class LightTaskTracker extends TaskTracker {
         if (timeoutCheckScheduledFuture != null) {
             timeoutCheckScheduledFuture.cancel(true);
         }
-        log.info("[TaskTracker-{}] task complete ! create time:{},queue time:{},use time:{},result:{}", instanceId, createTime, taskStartTime - createTime, System.currentTimeMillis() - taskStartTime, result);
+        log.info("[TaskTracker-{}] task complete ! create time:{},queue time:{},use time:{},result:{}", instanceId, createTime, taskStartTime - createTime, Instant.now().toEpochMilli() - taskStartTime, result);
         // 执行完成后立即上报一次
         checkAndReportStatus();
         return result;
@@ -263,7 +264,7 @@ public class LightTaskTracker extends TaskTracker {
         reportInstanceStatusReq.setInstanceId(instanceId);
         reportInstanceStatusReq.setWfInstanceId(instanceInfo.getWfInstanceId());
         reportInstanceStatusReq.setTotalTaskNum(1);
-        reportInstanceStatusReq.setReportTime(System.currentTimeMillis());
+        reportInstanceStatusReq.setReportTime(Instant.now().toEpochMilli());
         reportInstanceStatusReq.setStartTime(createTime);
         reportInstanceStatusReq.setSourceAddress(workerRuntime.getWorkerAddress());
         reportInstanceStatusReq.setSucceedTaskNum(0);
@@ -281,7 +282,7 @@ public class LightTaskTracker extends TaskTracker {
                 try {
                     if (tryForceStopThread(workerThread)) {
                         finished.set(true);
-                        taskEndTime = System.currentTimeMillis();
+                        taskEndTime = Instant.now().toEpochMilli();
                         result = new ProcessResult(false, SystemInstanceResult.USER_STOP_INSTANCE_FORCE_STOP);
                         log.warn("[TaskTracker-{}] task need stop, force stop thread {} success!", instanceId, workerThread.getName());
                         // 被终止的任务不需要上报状态
@@ -314,7 +315,7 @@ public class LightTaskTracker extends TaskTracker {
             reportInstanceStatusReq.setResult(suit(result.getMsg()));
             reportInstanceStatusReq.setEndTime(taskEndTime);
             // 微操一下，上报最终状态时重新设置下时间，并且增加一小段偏移，保证在并发上报运行中状态以及最终状态时，最终状态的上报时间晚于运行中的状态
-            reportInstanceStatusReq.setReportTime(System.currentTimeMillis() + 1);
+            reportInstanceStatusReq.setReportTime(Instant.now().toEpochMilli() + 1);
             reportFinalStatusThenDestroy(workerRuntime, reportInstanceStatusReq);
             return;
         }
@@ -325,7 +326,7 @@ public class LightTaskTracker extends TaskTracker {
     }
 
     private void timeoutCheck() {
-        if (taskStartTime == null || System.currentTimeMillis() - taskStartTime < instanceInfo.getInstanceTimeoutMS()) {
+        if (taskStartTime == null || Instant.now().toEpochMilli() - taskStartTime < instanceInfo.getInstanceTimeoutMS()) {
             return;
         }
         if (finished.get() && result != null) {
@@ -335,7 +336,7 @@ public class LightTaskTracker extends TaskTracker {
         // 首次判断超时
         if (timeoutFlag.compareAndSet(false, true)) {
             // 超时，仅尝试打断任务
-            log.warn("[TaskTracker-{}] task timeout,taskStarTime:{},currentTime:{},runningTimeLimit:{}, try to interrupt it.", instanceId, taskStartTime, System.currentTimeMillis(), instanceInfo.getInstanceTimeoutMS());
+            log.warn("[TaskTracker-{}] task timeout,taskStarTime:{},currentTime:{},runningTimeLimit:{}, try to interrupt it.", instanceId, taskStartTime, Instant.now().toEpochMilli(), instanceInfo.getInstanceTimeoutMS());
             processFuture.cancel(true);
             return;
         }
@@ -352,7 +353,7 @@ public class LightTaskTracker extends TaskTracker {
         try {
             if (tryForceStopThread(workerThread)) {
                 finished.set(true);
-                taskEndTime = System.currentTimeMillis();
+                taskEndTime = Instant.now().toEpochMilli();
                 result = new ProcessResult(false, SystemInstanceResult.INSTANCE_EXECUTE_TIMEOUT_FORCE_STOP);
                 log.warn("[TaskTracker-{}] task timeout, force stop thread {} success!", instanceId, workerThread.getName());
             }

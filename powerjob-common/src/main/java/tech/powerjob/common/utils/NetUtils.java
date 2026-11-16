@@ -40,8 +40,8 @@ public class NetUtils {
     /**
      * returned port range is [30000, 39999]
      */
-    private static final int RND_PORT_START = 30000;
-    private static final int RND_PORT_END = 65535;
+    private static final int RND_PORT_START = readPortFromEnv("POWERJOB_RND_PORT_START", 30000);
+    private static final int RND_PORT_END = readPortFromEnv("POWERJOB_RND_PORT_END", 65535);
 
     private static volatile String HOST_ADDRESS;
     private static final String LOCALHOST_VALUE = "127.0.0.1";
@@ -50,6 +50,14 @@ public class NetUtils {
     private static final String ANY_HOST_VALUE = "0.0.0.0";
 
     private NetUtils() {
+    }
+
+    private static int readPortFromEnv(String name, int defaultValue) {
+        try {
+            return Integer.parseInt(System.getenv().getOrDefault(name, String.valueOf(defaultValue)).trim());
+        } catch (NumberFormatException e) {
+            return defaultValue;
+        }
     }
 
     public static int getRandomPort() {

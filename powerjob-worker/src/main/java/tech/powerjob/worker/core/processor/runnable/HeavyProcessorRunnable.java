@@ -1,5 +1,6 @@
 package tech.powerjob.worker.core.processor.runnable;
 
+import java.time.Instant;
 import com.google.common.base.Stopwatch;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -215,7 +216,7 @@ public class HeavyProcessorRunnable implements Runnable {
         req.setTaskId(task.getTaskId());
         req.setStatus(status.getValue());
         req.setResult(result);
-        req.setReportTime(System.currentTimeMillis());
+        req.setReportTime(Instant.now().toEpochMilli());
         req.setCmd(cmd);
         // 检查追加的上下文大小是否超出限制
         if (instanceInfo.getWfInstanceId() !=null && WorkflowContextUtils.isExceededLengthLimit(appendedWfContext, workerRuntime.getWorkerConfig().getMaxAppendedWfContextLength())) {

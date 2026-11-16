@@ -1,5 +1,6 @@
 package tech.powerjob.client.test;
 
+import java.time.Instant;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Test;
 import tech.powerjob.common.request.http.RunJobRequest;
@@ -23,7 +24,7 @@ public class TestInstance extends ClientInitializer {
 
     @Test
     void testOuterKeyAndExtendValue() {
-        String outerKey = "ok_" + System.currentTimeMillis();
+        String outerKey = "ok_" + Instant.now().toEpochMilli();
         RunJobRequest runJobRequest = new RunJobRequest()
                 .setJobId(jobId)
                 .setOuterKey(outerKey).setExtendValue("TEST_EXT_VALUE")

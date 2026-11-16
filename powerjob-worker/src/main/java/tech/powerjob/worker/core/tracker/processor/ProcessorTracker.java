@@ -1,5 +1,6 @@
 package tech.powerjob.worker.core.tracker.processor;
 
+import java.time.Instant;
 import com.google.common.collect.Queues;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import lombok.extern.slf4j.Slf4j;
@@ -95,7 +96,7 @@ public class ProcessorTracker {
     public ProcessorTracker(TaskTrackerStartTaskReq request, WorkerRuntime workerRuntime) {
         try {
             // 赋值
-            this.startTime = System.currentTimeMillis();
+            this.startTime = Instant.now().toEpochMilli();
             this.workerRuntime = workerRuntime;
             this.instanceInfo = request.getInstanceInfo();
             this.instanceId = request.getInstanceInfo().getInstanceId();
@@ -141,7 +142,7 @@ public class ProcessorTracker {
                     .setTaskId(newTask.getTaskId())
                     .setStatus(TaskStatus.WORKER_PROCESS_FAILED.getValue())
                     .setResult(lethalReason)
-                    .setReportTime(System.currentTimeMillis());
+                    .setReportTime(Instant.now().toEpochMilli());
 
             TransportUtils.ptReportTask(report, taskTrackerAddress, workerRuntime);
             return;
@@ -170,7 +171,7 @@ public class ProcessorTracker {
             reportReq.setSubInstanceId(newTask.getSubInstanceId());
             reportReq.setTaskId(newTask.getTaskId());
             reportReq.setStatus(TaskStatus.WORKER_RECEIVED.getValue());
-            reportReq.setReportTime(System.currentTimeMillis());
+            reportReq.setReportTime(Instant.now().toEpochMilli());
 
             TransportUtils.ptReportTask(reportReq, taskTrackerAddress, workerRuntime);
 
@@ -245,7 +246,7 @@ public class ProcessorTracker {
         public void run0() {
 
             // 超时检查，如果超时则自动关闭 TaskTracker
-            long interval = System.currentTimeMillis() - startTime;
+            long interval = Instant.now().toEpochMilli() - startTime;
             // 秒级任务的ProcessorTracker不应该关闭
             if (!TimeExpressionType.FREQUENT_TYPES.contains(instanceInfo.getTimeExpressionType())) {
                 if (interval > instanceInfo.getInstanceTimeoutMS()) {
@@ -261,9 +262,9 @@ public class ProcessorTracker {
                 lastCompletedTaskCount = threadPool.getCompletedTaskCount();
             } else {
                 if (lastIdleTime == -1) {
-                    lastIdleTime = System.currentTimeMillis();
+                    lastIdleTime = Instant.now().toEpochMilli();
                 } else {
-                    long idleTime = System.currentTimeMillis() - lastIdleTime;
+                    long idleTime = Instant.now().toEpochMilli() - lastIdleTime;
                     if (idleTime > MAX_IDLE_TIME) {
 
                         boolean shouldDestroyWhenIdle = shouldDestroyWhenIdle();
@@ -288,7 +289,7 @@ public class ProcessorTracker {
             while (!statusReportRetryQueue.isEmpty()) {
                 ProcessorReportTaskStatusReq req = statusReportRetryQueue.poll();
                 if (req != null) {
-                    req.setReportTime(System.currentTimeMillis());
+                    req.setReportTime(Instant.now().toEpochMilli());
                     if (!TransportUtils.reliablePtReportTask(req, taskTrackerAddress, workerRuntime)) {
                         statusReportRetryQueue.add(req);
                         log.warn("[ProcessorRunnable-{}] retry report finished task status failed: {}", instanceId, req);

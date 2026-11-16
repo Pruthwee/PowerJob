@@ -1,5 +1,6 @@
 package tech.powerjob.server.core.scheduler;
 
+import java.time.Instant;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import tech.powerjob.common.enums.TimeExpressionType;
@@ -55,8 +56,8 @@ public class TimingStrategyServiceTest {
         List<String> triggerTimes = timingStrategyService.calculateNextTriggerTimes(TimeExpressionType.FIXED_RATE, String.valueOf(timeParam), null, null);
         Assertions.assertEquals(5, triggerTimes.size());
 
-        Long startTime = System.currentTimeMillis() + timeParam;
-        Long endTime = System.currentTimeMillis() + timeParam * 3;
+        Long startTime = Instant.now().toEpochMilli() + timeParam;
+        Long endTime = Instant.now().toEpochMilli() + timeParam * 3;
         triggerTimes = timingStrategyService.calculateNextTriggerTimes(TimeExpressionType.FIXED_RATE, String.valueOf(timeParam), startTime, endTime);
         Assertions.assertEquals(3, triggerTimes.size());
 

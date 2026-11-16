@@ -1,5 +1,6 @@
 package tech.powerjob.server.common.timewheel;
 
+import java.time.Instant;
 import tech.powerjob.common.utils.CommonUtils;
 import tech.powerjob.common.utils.SysUtils;
 import tech.powerjob.server.common.RejectedExecutionHandlerFactory;
@@ -75,7 +76,7 @@ public class HashedWheelTimer implements Timer {
                     queue, threadFactory, RejectedExecutionHandlerFactory.newCallerRun("PowerJobTimeWheelPool"));
         }
 
-        startTime = System.currentTimeMillis();
+        startTime = Instant.now().toEpochMilli();
 
         // 启动后台线程
         indicator = new Indicator();
@@ -85,7 +86,7 @@ public class HashedWheelTimer implements Timer {
     @Override
     public TimerFuture schedule(TimerTask task, long delay, TimeUnit unit) {
 
-        long targetTime = System.currentTimeMillis() + unit.toMillis(delay);
+        long targetTime = Instant.now().toEpochMilli() + unit.toMillis(delay);
         HashedWheelTimerFuture timerFuture = new HashedWheelTimerFuture(task, targetTime);
 
         // 直接运行到期、过期任务
@@ -256,7 +257,7 @@ public class HashedWheelTimer implements Timer {
 
             // 下一次调度的绝对时间
             long nextTime = startTime + (tick + 1) * tickDuration;
-            long sleepTime = nextTime - System.currentTimeMillis();
+            long sleepTime = nextTime - Instant.now().toEpochMilli();
 
             if (sleepTime > 0) {
                 try {

@@ -1,5 +1,7 @@
 package tech.powerjob.server.core.uid;
 
+import java.time.Instant;
+
 /**
  * Twitter SnowFlake（Scala -> Java）
  *
@@ -117,6 +119,6 @@ public class SnowFlakeIdGenerator {
     }
 
     private long getNewStamp() {
-        return System.currentTimeMillis();
+        return Instant.now().toEpochMilli();
     }
 }

@@ -15,6 +15,7 @@ import tech.powerjob.server.web.request.ModifyUserInfoRequest;
 import tech.powerjob.server.web.service.PwjbUserWebService;
 
 import java.util.Optional;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -24,7 +25,7 @@ import static org.mockito.Mockito.*;
 class BootstrapCredentialLoggingTest {
     @Test
     void configuredPasswordAndLoginTokenAreNotLoggedDuringInitialization() {
-        String password = "synthetic-admin-password-canary";
+        String password = "fixture-" + UUID.randomUUID();
         String jwt = "synthetic-session-token-canary";
         SystemInitializeServiceImpl initializer = new SystemInitializeServiceImpl();
         PwjbUserWebService users = mock(PwjbUserWebService.class);

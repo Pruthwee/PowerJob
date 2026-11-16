@@ -1,5 +1,6 @@
 package tech.powerjob.server.core.instance;
 
+import java.time.Instant;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -122,7 +123,7 @@ public class InstanceManager implements TransportServiceAware {
             }
             LifeCycle lifeCycle = LifeCycle.parse(jobInfo.getLifecycle());
             // 检查生命周期是否已结束
-            if (lifeCycle.getEnd() != null && lifeCycle.getEnd() <= System.currentTimeMillis()) {
+            if (lifeCycle.getEnd() != null && lifeCycle.getEnd() <= Instant.now().toEpochMilli()) {
                 stopInstance(instanceId, instanceInfo);
                 instanceInfo.setStatus(InstanceStatus.SUCCEED.getV());
             } else {
@@ -149,7 +150,7 @@ public class InstanceManager implements TransportServiceAware {
         boolean finished = false;
         if (receivedInstanceStatus == InstanceStatus.SUCCEED) {
             instanceInfo.setResult(req.getResult());
-            instanceInfo.setFinishedTime(req.getEndTime() == null ? System.currentTimeMillis() : req.getEndTime());
+            instanceInfo.setFinishedTime(req.getEndTime() == null ? Instant.now().toEpochMilli() : req.getEndTime());
             finished = true;
         } else if (receivedInstanceStatus == InstanceStatus.FAILED) {
 
@@ -159,14 +160,14 @@ public class InstanceManager implements TransportServiceAware {
                 log.info("[InstanceManager-{}] instance execute failed but will take the {}th retry.", instanceId, instanceInfo.getRunningTimes());
 
                 // 延迟10S重试（由于重试不改变 instanceId，如果派发到同一台机器，上一个 TaskTracker 还处于资源释放阶段，无法创建新的TaskTracker，任务失败）
-                instanceInfo.setExpectedTriggerTime(System.currentTimeMillis() + 10000);
+                instanceInfo.setExpectedTriggerTime(Instant.now().toEpochMilli() + 10000);
 
                 // 修改状态为 等待派发，正式开始重试
                 // 问题：会丢失以往的调度记录（actualTriggerTime什么的都会被覆盖）
                 instanceInfo.setStatus(InstanceStatus.WAITING_DISPATCH.getV());
             } else {
                 instanceInfo.setResult(req.getResult());
-                instanceInfo.setFinishedTime(req.getEndTime() == null ? System.currentTimeMillis() : req.getEndTime());
+                instanceInfo.setFinishedTime(req.getEndTime() == null ? Instant.now().toEpochMilli() : req.getEndTime());
                 finished = true;
                 log.info("[InstanceManager-{}] instance execute failed and have no chance to retry.", instanceId);
             }

@@ -1,5 +1,6 @@
 package tech.powerjob.client.test;
 
+import java.time.Instant;
 import com.alibaba.fastjson.JSONObject;
 import com.google.common.collect.Lists;
 import lombok.extern.slf4j.Slf4j;
@@ -32,8 +33,8 @@ class TestClient extends ClientInitializer {
 
         SaveJobInfoRequest newJobInfo = new SaveJobInfoRequest();
         newJobInfo.setId(JOB_ID);
-        newJobInfo.setJobName("omsOpenAPIJobccccc" + System.currentTimeMillis());
-        newJobInfo.setJobDescription("test OpenAPI" + System.currentTimeMillis());
+        newJobInfo.setJobName("omsOpenAPIJobccccc" + Instant.now().toEpochMilli());
+        newJobInfo.setJobDescription("test OpenAPI" + Instant.now().toEpochMilli());
         newJobInfo.setJobParams("{'aa':'bb'}");
         newJobInfo.setTimeExpressionType(TimeExpressionType.CRON);
         newJobInfo.setTimeExpression("0 0 * * * ? ");

@@ -1,5 +1,6 @@
 package tech.powerjob.server.web;
 
+import java.time.Instant;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.mockito.ArgumentCaptor;
@@ -68,7 +69,7 @@ class DeletedDefinitionRetryLifecycleTest {
         if (budget > 0) {
             assertEquals(InstanceStatus.WAITING_DISPATCH.getV(), instance.getStatus());
             assertEquals(1L, instance.getRunningTimes());
-            assertTrue(instance.getExpectedTriggerTime() > System.currentTimeMillis());
+            assertTrue(instance.getExpectedTriggerTime() > Instant.now().toEpochMilli());
             verify(manager, never()).processFinishedInstance(anyLong(), any(), any(), any());
             // Model the next overdue DB scan without sleeping for the scheduler's polling interval.
             when(instances.findAllByAppIdInAndStatusAndExpectedTriggerTimeLessThan(anyList(), eq(InstanceStatus.WAITING_DISPATCH.getV()), anyLong(), any()))

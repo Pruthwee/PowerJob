@@ -1,5 +1,6 @@
 package tech.powerjob.server.common.module;
 
+import java.time.Instant;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import tech.powerjob.common.model.DeployedContainerInfo;
@@ -51,7 +52,7 @@ public class WorkerInfo {
 
     public void refresh(WorkerHeartbeat workerHeartbeat) {
         address = workerHeartbeat.getWorkerAddress();
-        lastActiveTime = System.currentTimeMillis();
+        lastActiveTime = Instant.now().toEpochMilli();
         lastActiveWorkerTime = workerHeartbeat.getHeartbeatTime();
         protocol = workerHeartbeat.getProtocol();
         client = workerHeartbeat.getClient();
@@ -64,7 +65,7 @@ public class WorkerInfo {
 
         if (workerHeartbeat.isOverload()) {
             overloading = true;
-            lastOverloadTime = System.currentTimeMillis();
+            lastOverloadTime = Instant.now().toEpochMilli();
             log.warn("[WorkerInfo] worker {} is overload!", getAddress());
         } else {
             overloading = false;
@@ -72,7 +73,7 @@ public class WorkerInfo {
     }
 
     public boolean timeout() {
-        long timeout = System.currentTimeMillis() - lastActiveTime;
+        long timeout = Instant.now().toEpochMilli() - lastActiveTime;
         return timeout > WORKER_TIMEOUT_MS;
     }
 

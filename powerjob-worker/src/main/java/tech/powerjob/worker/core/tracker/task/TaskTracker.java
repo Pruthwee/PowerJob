@@ -1,5 +1,6 @@
 package tech.powerjob.worker.core.tracker.task;
 
+import java.time.Instant;
 import com.google.common.collect.Maps;
 import lombok.extern.slf4j.Slf4j;
 import tech.powerjob.common.enums.ExecuteType;
@@ -63,7 +64,7 @@ public abstract class TaskTracker {
     protected static final int MAX_REPORT_FAILED_THRESHOLD = 5;
 
     protected TaskTracker(ServerScheduleJobReq req, WorkerRuntime workerRuntime) {
-        this.createTime = System.currentTimeMillis();
+        this.createTime = Instant.now().toEpochMilli();
         this.workerRuntime = workerRuntime;
         this.instanceId = req.getInstanceId();
 
@@ -129,8 +130,8 @@ public abstract class TaskTracker {
 
         response.setInstanceStatus(InstanceStatus.FAILED.getV());
         response.setResult(String.format("init TaskTracker failed, reason: %s", e.toString()));
-        response.setReportTime(System.currentTimeMillis());
-        response.setStartTime(System.currentTimeMillis());
+        response.setReportTime(Instant.now().toEpochMilli());
+        response.setStartTime(Instant.now().toEpochMilli());
         response.setSourceAddress(workerRuntime.getWorkerAddress());
 
         TransportUtils.ttReportInstanceStatus(response, workerRuntime.getServerDiscoveryService().getCurrentServerAddress(), workerRuntime.getTransporter());

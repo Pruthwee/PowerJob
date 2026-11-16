@@ -1,5 +1,6 @@
 package tech.powerjob.server.core.lock;
 
+import java.time.Instant;
 import tech.powerjob.common.utils.CommonUtils;
 import tech.powerjob.common.utils.NetUtils;
 import tech.powerjob.server.extension.LockService;
@@ -53,7 +54,7 @@ public class DatabaseLockService implements LockService {
         if (omsLockDO == null) {
             return false;
         }
-        long lockedMillions = System.currentTimeMillis() - omsLockDO.getGmtCreate().getTime();
+        long lockedMillions = Instant.now().toEpochMilli() - omsLockDO.getGmtCreate().getTime();
 
         // 锁超时，强制释放锁并重新尝试获取
         if (lockedMillions > omsLockDO.getMaxLockTime()) {

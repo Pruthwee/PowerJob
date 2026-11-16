@@ -1,5 +1,6 @@
 package tech.powerjob.server.core.workflow;
 
+import java.time.Instant;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.TypeReference;
 import com.google.common.collect.Maps;
@@ -177,7 +178,7 @@ public class WorkflowInstanceManager {
         newWfInstance.setWorkflowId(wfId);
         newWfInstance.setStatus(WorkflowInstanceStatus.WAITING.getV());
         newWfInstance.setExpectedTriggerTime(expectTriggerTime);
-        newWfInstance.setActualTriggerTime(System.currentTimeMillis());
+        newWfInstance.setActualTriggerTime(Instant.now().toEpochMilli());
         newWfInstance.setWfInitParams(initParams);
 
         // 如果 initParams 是个合法的 Map<String,String> JSON 串则直接将其注入 wfContext
@@ -255,7 +256,7 @@ public class WorkflowInstanceManager {
             }
             if (readyNodes.isEmpty()) {
                 // 没有就绪的节点（所有节点都被禁用）
-                wfInstanceInfo.setFinishedTime(System.currentTimeMillis());
+                wfInstanceInfo.setFinishedTime(Instant.now().toEpochMilli());
                 wfInstanceInfo.setDag(JSON.toJSONString(dag));
                 log.warn("[Workflow-{}|{}] workflowInstance({}) needn't running ", wfInfo.getId(), wfInstanceId, wfInstanceInfo);
                 handleWfInstanceFinalStatus(wfInstanceInfo, SystemInstanceResult.NO_ENABLED_NODES, WorkflowInstanceStatus.SUCCEED);
@@ -315,7 +316,7 @@ public class WorkflowInstanceManager {
                 if (instanceId.equals(node.getInstanceId())) {
                     node.setStatus(status.getV());
                     node.setResult(result);
-                    node.setFinishedTime(CommonUtils.formatTime(System.currentTimeMillis()));
+                    node.setFinishedTime(CommonUtils.formatTime(Instant.now().toEpochMilli()));
                     instanceNode = node;
                     log.info("[Workflow-{}|{}] node(nodeId={},jobId={},instanceId={}) finished in workflowInstance, status={},result={}", wfId, wfInstanceId, node.getNodeId(), node.getJobId(), instanceId, status.name(), result);
                 }
@@ -432,7 +433,7 @@ public class WorkflowInstanceManager {
     private void handleWfInstanceFinalStatus(WorkflowInstanceInfoDO wfInstance, String result, WorkflowInstanceStatus workflowInstanceStatus) {
         wfInstance.setStatus(workflowInstanceStatus.getV());
         wfInstance.setResult(result);
-        wfInstance.setFinishedTime(System.currentTimeMillis());
+        wfInstance.setFinishedTime(Instant.now().toEpochMilli());
         wfInstance.setGmtModified(new Date());
         workflowInstanceInfoRepository.saveAndFlush(wfInstance);
 

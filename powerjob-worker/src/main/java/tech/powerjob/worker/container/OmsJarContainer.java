@@ -1,5 +1,6 @@
 package tech.powerjob.worker.container;
 
+import java.time.Instant;
 import tech.powerjob.common.ContainerConstant;
 import tech.powerjob.common.exception.PowerJobException;
 import tech.powerjob.worker.core.processor.sdk.BasicProcessor;
@@ -45,7 +46,7 @@ public class OmsJarContainer implements OmsContainer {
         this.name = name;
         this.version = version;
         this.localJarFile = localJarFile;
-        this.deployedTime = System.currentTimeMillis();
+        this.deployedTime = Instant.now().toEpochMilli();
     }
 
     @Override

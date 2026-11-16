@@ -1,5 +1,6 @@
 package tech.powerjob.server.remote.worker;
 
+import java.time.Instant;
 import tech.powerjob.common.model.DeployedContainerInfo;
 import tech.powerjob.common.request.WorkerHeartbeat;
 import com.google.common.collect.Lists;
@@ -57,7 +58,7 @@ public class ClusterStatusHolder {
         });
         long oldHeartbeatTime = workerInfo.getLastActiveWorkerTime();
         if (heartbeatTime < oldHeartbeatTime) {
-            log.warn("[ClusterStatusHolder-{}] receive the expired heartbeat from {}, serverTime: {}, heartTime: {}", appName, heartbeat.getWorkerAddress(), System.currentTimeMillis(), heartbeat.getHeartbeatTime());
+            log.warn("[ClusterStatusHolder-{}] receive the expired heartbeat from {}, serverTime: {}, heartTime: {}", appName, heartbeat.getWorkerAddress(), Instant.now().toEpochMilli(), heartbeat.getHeartbeatTime());
             return;
         }
 

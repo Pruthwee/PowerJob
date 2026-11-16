@@ -1,5 +1,6 @@
 package tech.powerjob.server.test;
 
+import java.time.Instant;
 import org.assertj.core.util.Lists;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -69,7 +70,7 @@ public class RepositoryTest {
 
     @Test
     public void testSelectCronJobSQL() {
-        List<JobInfoDO> result = jobInfoRepository.findByAppIdInAndStatusAndTimeExpressionTypeAndNextTriggerTimeLessThanEqual(Lists.newArrayList(1L), SwitchableStatus.ENABLE.getV(), TimeExpressionType.CRON.getV(), System.currentTimeMillis());
+        List<JobInfoDO> result = jobInfoRepository.findByAppIdInAndStatusAndTimeExpressionTypeAndNextTriggerTimeLessThanEqual(Lists.newArrayList(1L), SwitchableStatus.ENABLE.getV(), TimeExpressionType.CRON.getV(), Instant.now().toEpochMilli());
         System.out.println(result);
     }
 
@@ -78,7 +79,7 @@ public class RepositoryTest {
     public void testUpdate() {
         InstanceInfoDO updateEntity = new InstanceInfoDO();
         updateEntity.setId(22L);
-        updateEntity.setActualTriggerTime(System.currentTimeMillis());
+        updateEntity.setActualTriggerTime(Instant.now().toEpochMilli());
         updateEntity.setResult("hahaha");
         instanceInfoRepository.saveAndFlush(updateEntity);
     }
@@ -86,7 +87,7 @@ public class RepositoryTest {
     @Test
     @Transactional
     public void testExecuteLogUpdate() {
-        instanceInfoRepository.update4TriggerFailed(1586310414570L, 2, System.currentTimeMillis(), System.currentTimeMillis(), "192.168.1.1", "NULL", new Date());
+        instanceInfoRepository.update4TriggerFailed(1586310414570L, 2, Instant.now().toEpochMilli(), Instant.now().toEpochMilli(), "192.168.1.1", "NULL", Date.from(Instant.now()));
         instanceInfoRepository.update4FrequentJob(1586310419650L, 2, 200, new Date());
     }
 

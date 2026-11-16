@@ -1,5 +1,6 @@
 package tech.powerjob.server.core.lock;
 
+import java.time.Instant;
 import org.junit.jupiter.api.Test;
 import org.springframework.dao.DataIntegrityViolationException;
 import tech.powerjob.server.persistence.remote.model.OmsLockDO;
@@ -98,7 +99,7 @@ class DatabaseLockServiceTest {
     @Test
     void expiredLockCanStillBeReleasedAndAcquired() {
         OmsLockDO expired = new OmsLockDO("expired_lock", "other-owner", 1000L);
-        expired.setGmtCreate(new Date(System.currentTimeMillis() - 60000));
+        expired.setGmtCreate(new Date(Instant.now().toEpochMilli() - 60000));
         when(repository.saveAndFlush(any(OmsLockDO.class)))
                 .thenThrow(new DataIntegrityViolationException("duplicate lock name"))
                 .thenAnswer(invocation -> invocation.getArgument(0));

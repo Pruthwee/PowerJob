@@ -1,5 +1,6 @@
 package tech.powerjob.server.core;
 
+import java.time.Instant;
 import com.google.common.collect.Lists;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -125,7 +126,7 @@ public class DispatchService {
         log.info("[Dispatcher-{}|{}] start to dispatch job: {};instancePrams: {}.", jobId, instanceId, jobInfo, dbInstanceParams);
 
         // 查询当前运行的实例数
-        long current = System.currentTimeMillis();
+        long current = Instant.now().toEpochMilli();
         Integer maxInstanceNum = jobInfo.getMaxInstanceNum();
         // 秒级任务只派发到一台机器，具体的 maxInstanceNum 由 TaskTracker 控制
         if (TimeExpressionType.FREQUENT_TYPES.contains(jobInfo.getTimeExpressionType())) {

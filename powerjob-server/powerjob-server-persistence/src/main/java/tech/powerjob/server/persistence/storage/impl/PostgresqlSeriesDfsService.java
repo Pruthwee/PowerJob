@@ -1,5 +1,6 @@
 package tech.powerjob.server.persistence.storage.impl;
 
+import java.time.Instant;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
@@ -85,6 +86,11 @@ public class PostgresqlSeriesDfsService extends AbstractDFsService {
 
     private static final String DEFAULT_TABLE_NAME = "powerjob_files";
 
+    /**
+     * JDBC 语句超时（单位：秒），文件内容可能很大，因此取较大值
+     */
+    private static final int QUERY_TIMEOUT_SECONDS = 600;
+
     private static final String POWERJOB_FILES_ID_SEQ = "CREATE SEQUENCE if not exists powerjob_files_id_seq\n" +
             "    START WITH 1\n" +
             "    INCREMENT BY 1\n" +
@@ -121,11 +127,17 @@ public class PostgresqlSeriesDfsService extends AbstractDFsService {
     }
 
     private void executeDelete(String sql) {
-        try (Connection con = dataSource.getConnection()) {
-            con.createStatement().executeUpdate(sql);
+        try (Connection con = dataSource.getConnection(); Statement statement = newStatement(con)) {
+            statement.executeUpdate(sql);
         }  catch (Exception e) {
             log.error("[PostgresqlSeriesDfsService] executeDelete failed, sql: {}", sql);
         }
+    }
+
+    private static Statement newStatement(Connection con) throws SQLException {
+        Statement statement = con.createStatement();
+        statement.setQueryTimeout(QUERY_TIMEOUT_SECONDS);
+        return statement;
     }
 
     @Override
@@ -144,7 +156,7 @@ public class PostgresqlSeriesDfsService extends AbstractDFsService {
         meta.put("_local_file_path_", storeRequest.getLocalFile().getAbsolutePath());
         BufferedInputStream bufferedInputStream = new BufferedInputStream(Files.newInputStream(storeRequest.getLocalFile().toPath()));
 
-        Date date = new Date(System.currentTimeMillis());
+        Date date = new Date(Instant.now().toEpochMilli());
 
         Connection con =null;
         PreparedStatement pst =null;
@@ -225,9 +237,9 @@ public class PostgresqlSeriesDfsService extends AbstractDFsService {
 
         FileUtils.forceMkdirParent(downloadRequest.getTarget());
 
-        try (Connection con = dataSource.getConnection()) {
-
-            ResultSet resultSet = con.createStatement().executeQuery(querySQL.concat(whereSQL(fileLocation)));
+        try (Connection con = dataSource.getConnection();
+             Statement statement = newStatement(con);
+             ResultSet resultSet = statement.executeQuery(querySQL.concat(whereSQL(fileLocation)))) {
 
             boolean exist = resultSet.next();
 
@@ -262,9 +274,9 @@ public class PostgresqlSeriesDfsService extends AbstractDFsService {
 
         String querySQL = fullSQL(QUERY_META_SQL);
 
-        try (Connection con = dataSource.getConnection()) {
-
-            ResultSet resultSet = con.createStatement().executeQuery(querySQL.concat(whereSQL(fileLocation)));
+        try (Connection con = dataSource.getConnection();
+             Statement statement = newStatement(con);
+             ResultSet resultSet = statement.executeQuery(querySQL.concat(whereSQL(fileLocation)))) {
 
             boolean exist = resultSet.next();
 
@@ -292,7 +304,7 @@ public class PostgresqlSeriesDfsService extends AbstractDFsService {
         // 虽然官方提供了服务端删除的能力，依然强烈建议用户直接在数据库层面配置清理事件！！！
 
         String dSQLPrefix = fullSQL(DELETE_SQL);
-        final long targetTs = DateUtils.addDays(new Date(System.currentTimeMillis()), -days).getTime();
+        final long targetTs = DateUtils.addDays(Date.from(Instant.now()), -days).getTime();
         final String targetDeleteTime = CommonUtils.formatTime(targetTs);
         log.info("[PostgresqlSeriesDfsService] start to cleanExpiredFiles, targetDeleteTime: {}", targetDeleteTime);
         String fSQL = dSQLPrefix.concat(String.format(" where gmt_modified < '%s'", targetDeleteTime));
@@ -353,8 +365,12 @@ public class PostgresqlSeriesDfsService extends AbstractDFsService {
 
             log.info("[PostgresqlSeriesDfsService] use create table SQL: {}", createTableSQL);
             try (Connection connection = dataSource.getConnection()) {
-                connection.createStatement().execute(powerjobFilesIdSeq);
-                connection.createStatement().execute(createTableSQL);
+                try (Statement statement = newStatement(connection)) {
+                    statement.execute(powerjobFilesIdSeq);
+                }
+                try (Statement statement = newStatement(connection)) {
+                    statement.execute(createTableSQL);
+                }
                 log.info("[PostgresqlSeriesDfsService] auto create table successfully!");
             }
         }

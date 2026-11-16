@@ -1,5 +1,6 @@
 package tech.powerjob.server.web.service;
 
+import java.time.Instant;
 import org.springframework.stereotype.Service;
 import tech.powerjob.server.auth.jwt.JwtService;
 
@@ -26,7 +27,7 @@ public class LogDownloadTicketService {
         claims.put("appId", appId);
         claims.put("instanceId", instanceId);
         claims.put("scope", SIGNING_SCOPE);
-        claims.put("downloadExpiresAt", System.currentTimeMillis() + VALIDITY_MILLIS);
+        claims.put("downloadExpiresAt", Instant.now().toEpochMilli() + VALIDITY_MILLIS);
         return jwtService.build(claims, SIGNING_SCOPE);
     }
 }

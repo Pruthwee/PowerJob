@@ -1,5 +1,6 @@
 package tech.powerjob.server.common.utils;
 
+import java.time.Instant;
 import tech.powerjob.common.RemoteConstant;
 import com.google.common.collect.Lists;
 import lombok.extern.slf4j.Slf4j;
@@ -72,7 +73,7 @@ public class TimeUtils {
                     log.info("[TimeUtils] use ntp server: {}, request result: {}", address, ntpV3Packet);
                     // RFC-1305标准：https://tools.ietf.org/html/rfc1305
                     // 忽略传输误差吧...也就几十毫秒的事（阿里云给力啊！）
-                    long local = System.currentTimeMillis();
+                    long local = Instant.now().toEpochMilli();
                     long ntp = ntpV3Packet.getTransmitTimeStamp().getTime();
                     long offset =  local - ntp;
                     if (Math.abs(offset) > MAX_OFFSET) {

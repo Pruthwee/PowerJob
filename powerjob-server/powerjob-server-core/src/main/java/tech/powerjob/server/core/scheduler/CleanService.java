@@ -1,5 +1,6 @@
 package tech.powerjob.server.core.scheduler;
 
+import java.time.Instant;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Stopwatch;
 import lombok.extern.slf4j.Slf4j;
@@ -135,7 +136,7 @@ public class CleanService {
         long maxOffset = day * 24 * 60 * 60 * 1000L;
 
         for (File f : logFiles) {
-            long offset = System.currentTimeMillis() - f.lastModified();
+            long offset = Instant.now().toEpochMilli() - f.lastModified();
             if (offset >= maxOffset) {
                 if (!f.delete()) {
                     log.warn("[CleanService] delete file({}) failed.", f.getName());

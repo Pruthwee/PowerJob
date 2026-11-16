@@ -1,5 +1,6 @@
 package tech.powerjob.samples.tester;
 
+import java.time.Instant;
 import com.alibaba.fastjson.JSONObject;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
@@ -141,7 +142,7 @@ public class OpenApiTester implements BasicProcessor {
         SaveJobInfoRequest newJobInfo = new SaveJobInfoRequest();
 
         newJobInfo.setJobName("JobCreateByOpenAPI");
-        newJobInfo.setJobDescription("Timestamp: " + System.currentTimeMillis());
+        newJobInfo.setJobDescription("Timestamp: " + Instant.now().toEpochMilli());
         newJobInfo.setJobParams(NEW_JOB_PARAMS);
         newJobInfo.setTimeExpressionType(TimeExpressionType.API);
         newJobInfo.setExecuteType(ExecuteType.STANDALONE);

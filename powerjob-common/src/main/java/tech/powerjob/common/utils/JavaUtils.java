@@ -20,6 +20,9 @@ import java.util.jar.JarFile;
 @Slf4j
 public class JavaUtils {
 
+    private static final int CONNECT_TIMEOUT_MS = 5000;
+    private static final int READ_TIMEOUT_MS = 30000;
+
     /**
      * 获取类所在 Jar 包的版本
      * @param clz 类
@@ -39,6 +42,8 @@ public class JavaUtils {
             URL codeSourceLocation = codeSource.getLocation();
 
             URLConnection connection = codeSourceLocation.openConnection();
+            connection.setConnectTimeout(CONNECT_TIMEOUT_MS);
+            connection.setReadTimeout(READ_TIMEOUT_MS);
             if (connection instanceof JarURLConnection) {
                 return getImplementationVersion(((JarURLConnection) connection).getJarFile());
             }

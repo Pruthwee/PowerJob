@@ -1,5 +1,6 @@
 package tech.powerjob.worker.test;
 
+import java.time.Instant;
 import tech.powerjob.worker.common.constants.StoreStrategy;
 import tech.powerjob.worker.common.constants.TaskStatus;
 import tech.powerjob.common.utils.NetUtils;
@@ -42,9 +43,9 @@ public class PersistenceServiceTest {
             task.setStatus(TaskStatus.WORKER_RECEIVED.getValue());
             task.setTaskName("ROOT_TASK");
             task.setAddress(NetUtils.getLocalHost4Test());
-            task.setLastModifiedTime(System.currentTimeMillis());
-            task.setCreatedTime(System.currentTimeMillis());
-            task.setLastReportTime(System.currentTimeMillis());
+            task.setLastModifiedTime(Instant.now().toEpochMilli());
+            task.setCreatedTime(Instant.now().toEpochMilli());
+            task.setLastReportTime(Instant.now().toEpochMilli());
             task.setResult("");
         }
 
@@ -72,9 +73,9 @@ public class PersistenceServiceTest {
             task.setStatus(TaskStatus.WORKER_RECEIVED.getValue());
             task.setTaskName("ROOT_TASK");
             task.setAddress(NetUtils.getLocalHost4Test());
-            task.setLastModifiedTime(System.currentTimeMillis());
-            task.setCreatedTime(System.currentTimeMillis());
-            task.setLastReportTime(System.currentTimeMillis());
+            task.setLastModifiedTime(Instant.now().toEpochMilli());
+            task.setCreatedTime(Instant.now().toEpochMilli());
+            task.setLastReportTime(Instant.now().toEpochMilli());
             task.setResult("");
         }
         TaskDO firstTask = taskList.get(0);

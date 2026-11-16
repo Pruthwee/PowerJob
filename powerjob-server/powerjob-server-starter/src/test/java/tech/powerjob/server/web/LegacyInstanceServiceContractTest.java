@@ -1,5 +1,6 @@
 package tech.powerjob.server.web;
 
+import java.time.Instant;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.springframework.mock.web.MockHttpServletRequest;
@@ -34,7 +35,7 @@ class LegacyInstanceServiceContractTest {
         InstanceController controller = new InstanceController(); ReflectionTestUtils.setField(controller, "instanceService", service);
         InstanceInfoDO instance = new InstanceInfoDO(); instance.setInstanceId(9007199254740993L); instance.setAppId(20L); instance.setJobId(30L);
         instance.setStatus("retry".equals(operation) ? InstanceStatus.FAILED.getV() : InstanceStatus.WAITING_DISPATCH.getV());
-        instance.setExpectedTriggerTime(System.currentTimeMillis() + 3600000L); instance.setJobParams("private-parameters");
+        instance.setExpectedTriggerTime(Instant.now().toEpochMilli() + 3600000L); instance.setJobParams("private-parameters");
         when(instances.findByInstanceId(instance.getInstanceId())).thenReturn(instance);
         when(jobs.findById(30L)).thenReturn(Optional.of(new JobInfoDO()));
         MockHttpServletRequest request = new MockHttpServletRequest(); request.addHeader("AppId", sameApp ? "20" : "21");

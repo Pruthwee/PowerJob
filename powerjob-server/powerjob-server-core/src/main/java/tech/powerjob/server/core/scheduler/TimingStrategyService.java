@@ -1,5 +1,6 @@
 package tech.powerjob.server.core.scheduler;
 
+import java.time.Instant;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.time.DateFormatUtils;
 import org.springframework.stereotype.Service;
@@ -47,7 +48,7 @@ public class TimingStrategyService {
 
         TimingStrategyHandler timingStrategyHandler = getHandler(timeExpressionType);
         List<Long> triggerTimeList = new ArrayList<>(NEXT_N_TIMES);
-        Long nextTriggerTime = System.currentTimeMillis();
+        Long nextTriggerTime = Instant.now().toEpochMilli();
         do {
             nextTriggerTime = timingStrategyHandler.calculateNextTriggerTime(nextTriggerTime, timeExpression, startTime, endTime);
             if (nextTriggerTime == null) {
@@ -73,8 +74,8 @@ public class TimingStrategyService {
      * @return 下次的调度时间
      */
     public Long calculateNextTriggerTime(Long preTriggerTime, TimeExpressionType timeExpressionType, String timeExpression, Long startTime, Long endTime) {
-        if (preTriggerTime == null || preTriggerTime < System.currentTimeMillis()) {
-            preTriggerTime = System.currentTimeMillis();
+        if (preTriggerTime == null || preTriggerTime < Instant.now().toEpochMilli()) {
+            preTriggerTime = Instant.now().toEpochMilli();
         }
         return getHandler(timeExpressionType).calculateNextTriggerTime(preTriggerTime, timeExpression, startTime, endTime);
     }
@@ -100,7 +101,7 @@ public class TimingStrategyService {
 
     public void validate(TimeExpressionType timeExpressionType, String timeExpression, Long startTime, Long endTime) {
         if (endTime != null) {
-            if (endTime <= System.currentTimeMillis()) {
+            if (endTime <= Instant.now().toEpochMilli()) {
                 throw new PowerJobException("lifecycle is out of date!");
             }
             if (startTime != null && startTime > endTime) {

@@ -8,6 +8,8 @@ import java.io.OutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.nio.charset.StandardCharsets;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 /**
  * 简易服务器
@@ -18,7 +20,11 @@ import java.nio.charset.StandardCharsets;
 @Slf4j
 public class PingPongSocketServer implements PingPongServer {
 
-    private Thread thread;
+    private static final String THREAD_NAME = "PingPongSocketServer-Thread";
+
+    private ExecutorService executor;
+
+    private Thread shutdownHook;
 
     private ServerSocket serverSocket;
 
@@ -28,11 +34,10 @@ public class PingPongSocketServer implements PingPongServer {
     public void initialize(int port) throws Exception{
         serverSocket = new ServerSocket(port);
 
-        thread = new Thread(() -> {
-            while (true) {
-                if (terminated) {
-                    return;
-                }
+        executor = Executors.newSingleThreadExecutor(r -> new Thread(r, THREAD_NAME));
+
+        executor.execute(() -> {
+            while (!terminated) {
                 // 接收连接，如果没有连接，accept() 方法会阻塞
                 try (Socket socket = serverSocket.accept();OutputStream outputStream = socket.getOutputStream();) {
 
@@ -49,15 +54,23 @@ public class PingPongSocketServer implements PingPongServer {
                     }
                 }
             }
-        }, "PingPongSocketServer-Thread");
+        });
 
-        thread.start();
+        shutdownHook = new Thread(() -> CommonUtils.executeIgnoreException(() -> close()), THREAD_NAME + "-ShutdownHook");
+        Runtime.getRuntime().addShutdownHook(shutdownHook);
     }
 
     @Override
     public void close() throws IOException {
         terminated = true;
         CommonUtils.executeIgnoreException(() -> serverSocket.close());
-        thread.interrupt();
+        executor.shutdownNow();
+        if (shutdownHook != null) {
+            try {
+                Runtime.getRuntime().removeShutdownHook(shutdownHook);
+            } catch (IllegalStateException ignore) {
+                // JVM is already shutting down
+            }
+        }
     }
 }

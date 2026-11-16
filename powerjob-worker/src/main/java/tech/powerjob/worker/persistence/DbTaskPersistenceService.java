@@ -1,5 +1,6 @@
 package tech.powerjob.worker.persistence;
 
+import java.time.Instant;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import lombok.extern.slf4j.Slf4j;
@@ -80,7 +81,7 @@ public class DbTaskPersistenceService implements TaskPersistenceService {
     @Override
     public boolean updateTask(Long instanceId, String taskId, TaskDO updateEntity) {
         try {
-            updateEntity.setLastModifiedTime(System.currentTimeMillis());
+            updateEntity.setLastModifiedTime(Instant.now().toEpochMilli());
             SimpleTaskQuery query = genKeyQuery(instanceId, taskId);
             return execute(() -> taskDAO.simpleUpdate(query, updateEntity), cost -> log.warn("[TaskPersistenceService] [Slow] [{}] updateTask(taskId={}) cost {}ms", instanceId, taskId, cost));
         }catch (Exception e) {
@@ -112,7 +113,7 @@ public class DbTaskPersistenceService implements TaskPersistenceService {
     public boolean updateLostTasks(Long instanceId, List<String> addressList, boolean retry) {
 
         TaskDO updateEntity = new TaskDO();
-        updateEntity.setLastModifiedTime(System.currentTimeMillis());
+        updateEntity.setLastModifiedTime(Instant.now().toEpochMilli());
         if (retry) {
             updateEntity.setAddress(RemoteConstant.EMPTY_ADDRESS);
             updateEntity.setStatus(TaskStatus.WAITING_DISPATCH.getValue());
@@ -325,11 +326,11 @@ public class DbTaskPersistenceService implements TaskPersistenceService {
     }
 
     private static  <T> T execute(SupplierPlus<T> executor, Consumer<Long> slowQueryLogger) throws Exception {
-        long s = System.currentTimeMillis();
+        long s = Instant.now().toEpochMilli();
         try {
             return CommonUtils.executeWithRetry(executor, RETRY_TIMES, RETRY_INTERVAL_MS);
         } finally {
-            long cost = System.currentTimeMillis() - s;
+            long cost = Instant.now().toEpochMilli() - s;
             if (cost > SLOW_QUERY_RT_THRESHOLD) {
                 slowQueryLogger.accept(cost);
             }

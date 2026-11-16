@@ -44,6 +44,9 @@ public class CoreScheduleTaskManager implements InitializingBean, DisposableBean
         coreThreadContainer.add(new Thread(new LoopRunnable("CheckWorkflowInstance", InstanceStatusCheckService.CHECK_INTERVAL, instanceStatusCheckService::checkWorkflowInstance), "Thread-CheckWorkflowInstance"));
 
         coreThreadContainer.forEach(Thread::start);
+
+        // JVM 退出时复用已有的 destroy 逻辑，中断循环线程
+        Runtime.getRuntime().addShutdownHook(new Thread(this::destroy, "Thread-CoreScheduleTaskManager-Shutdown"));
     }
 
     @Override
@@ -65,7 +68,7 @@ public class CoreScheduleTaskManager implements InitializingBean, DisposableBean
         @Override
         public void run() {
             log.info("start task : {}.", taskName);
-            while (true) {
+            while (!Thread.currentThread().isInterrupted()) {
                 try {
 
                     // 倒置顺序为 先 sleep 再执行，解决异常情况 while true 打日志的问题 https://github.com/PowerJob/PowerJob/issues/769
