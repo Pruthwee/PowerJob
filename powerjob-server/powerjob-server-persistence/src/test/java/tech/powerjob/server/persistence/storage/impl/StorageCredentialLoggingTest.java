@@ -1,5 +1,6 @@
 package tech.powerjob.server.persistence.storage.impl;
 
+import tech.powerjob.common.utils.NetUtils;
 import ch.qos.logback.classic.Logger;
 import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.core.read.ListAppender;
@@ -16,13 +17,13 @@ class StorageCredentialLoggingTest {
     @Test
     void minioValidationFailureDoesNotDiscloseKeys() {
         assertNoCredential(MinioOssService.class, () -> assertThrows(IllegalArgumentException.class,
-                () -> new MinioOssService().initOssClient("http://127.0.0.1:1", "", CANARY, CANARY)));
+                () -> new MinioOssService().initOssClient("http://" + NetUtils.getLoopbackHost() + ":1", "", CANARY, CANARY)));
     }
 
     @Test
     void aliOssValidationFailureDoesNotDiscloseKeysOrSessionToken() {
         assertNoCredential(AliOssService.class, () -> assertThrows(IllegalArgumentException.class,
-                () -> new AliOssService().initOssClient("http://127.0.0.1:1", "", "PWD", CANARY, CANARY, CANARY)));
+                () -> new AliOssService().initOssClient("http://" + NetUtils.getLoopbackHost() + ":1", "", "PWD", CANARY, CANARY, CANARY)));
     }
 
     @Test
@@ -30,7 +31,7 @@ class StorageCredentialLoggingTest {
         assertNoCredential(GridFsService.class, () -> {
             GridFsService storage = new GridFsService();
             try {
-                storage.initMongo("mongodb://synthetic:" + CANARY + "@127.0.0.1:1/test?serverSelectionTimeoutMS=1");
+                storage.initMongo("mongodb://synthetic:" + CANARY + "@" + NetUtils.getLoopbackHost() + ":1/test?serverSelectionTimeoutMS=1");
             } finally {
                 storage.destroy();
             }

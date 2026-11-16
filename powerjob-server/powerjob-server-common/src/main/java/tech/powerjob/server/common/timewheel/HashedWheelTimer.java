@@ -34,8 +34,9 @@ public class HashedWheelTimer implements Timer {
 
     private final long startTime;
 
-    private final Queue<HashedWheelTimerFuture> waitingTasks = Queues.newLinkedBlockingQueue();
-    private final Queue<HashedWheelTimerFuture> canceledTasks = Queues.newLinkedBlockingQueue();
+    // capacity configurable from the environment; the default (Integer.MAX_VALUE) is the previous unbounded behaviour
+    private final Queue<HashedWheelTimerFuture> waitingTasks = Queues.newLinkedBlockingQueue(SysUtils.envInt("POWERJOB_TIMEWHEEL_PENDING_QUEUE_SIZE", Integer.MAX_VALUE));
+    private final Queue<HashedWheelTimerFuture> canceledTasks = Queues.newLinkedBlockingQueue(SysUtils.envInt("POWERJOB_TIMEWHEEL_CANCEL_QUEUE_SIZE", Integer.MAX_VALUE));
 
     private final ExecutorService taskProcessPool;
 
@@ -67,10 +68,10 @@ public class HashedWheelTimer implements Timer {
         }else {
             ThreadFactory threadFactory = new ThreadFactoryBuilder().setNameFormat("HashedWheelTimer-Executor-%d").build();
             // 这里需要调整一下队列大小
-            BlockingQueue<Runnable> queue = Queues.newLinkedBlockingQueue(8192);
+            BlockingQueue<Runnable> queue = Queues.newLinkedBlockingQueue(SysUtils.envInt("POWERJOB_TIMEWHEEL_QUEUE_SIZE", 8192));
             int core = Math.max(SysUtils.availableProcessors(), processThreadNum);
             // 基本都是 io 密集型任务
-            taskProcessPool = new ThreadPoolExecutor(core, 2 * core,
+            taskProcessPool = new ThreadPoolExecutor(core, SysUtils.envInt("POWERJOB_TIMEWHEEL_POOL_MAX_MULTIPLIER", 2) * core,
                     60, TimeUnit.SECONDS,
                     queue, threadFactory, RejectedExecutionHandlerFactory.newCallerRun("PowerJobTimeWheelPool"));
         }

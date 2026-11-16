@@ -1,5 +1,6 @@
 package tech.powerjob.worker.background;
 
+import tech.powerjob.common.utils.SysUtils;
 import tech.powerjob.common.enhance.SafeRunnable;
 import tech.powerjob.common.enums.LogLevel;
 import tech.powerjob.common.model.InstanceLogContent;
@@ -36,7 +37,7 @@ public class OmsLogHandler {
     // 上报锁，只需要一个线程上报即可
     private final Lock reportLock = new ReentrantLock();
     // 生产者消费者模式，异步上传日志
-    private final BlockingQueue<InstanceLogContent> logQueue = Queues.newLinkedBlockingQueue(10240);
+    private final BlockingQueue<InstanceLogContent> logQueue = Queues.newLinkedBlockingQueue(SysUtils.envInt("POWERJOB_LOG_QUEUE_SIZE", 10240));
 
     // 每次上报携带的数据条数
     private static final int BATCH_SIZE = 20;

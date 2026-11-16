@@ -18,6 +18,8 @@ import java.net.URL;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.nio.file.attribute.PosixFilePermissions;
 import java.util.Set;
 import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.ForkJoinTask;
@@ -62,10 +64,13 @@ public abstract class AbstractScriptProcessor extends CommonBasicProcessor {
 
         // 授权
         if  ( !SystemUtils.IS_OS_WINDOWS) {
-            ProcessBuilder chmodPb = new ProcessBuilder("/bin/chmod", "755", scriptPath);
-            // 等待返回，这里不可能导致死锁（shell产生大量数据可能导致死锁）
-            chmodPb.start().waitFor();
-            omsLogger.info("[SYSTEM] chmod 755 authorization complete, ready to start execution~");
+            // 使用 Java NIO 设置 rwxr-xr-x（等价于 chmod 755），不再依赖容器内的 /bin/chmod
+            try {
+                Files.setPosixFilePermissions(Paths.get(scriptPath), PosixFilePermissions.fromString("rwxr-xr-x"));
+                omsLogger.info("[SYSTEM] chmod 755 authorization complete, ready to start execution~");
+            } catch (UnsupportedOperationException | IOException e) {
+                omsLogger.warn("[SYSTEM] chmod 755 authorization failed, continue to execute: {}", e.getMessage());
+            }
         }
         // 2. 执行目标脚本
         ProcessBuilder pb = StringUtils.equals(getRunCommand(), CMD_SHELL) ?

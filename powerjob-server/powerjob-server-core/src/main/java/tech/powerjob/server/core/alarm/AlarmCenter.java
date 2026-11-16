@@ -31,7 +31,7 @@ public class AlarmCenter {
     private final List<Alarmable> BEANS = Lists.newLinkedList();
 
     public AlarmCenter(List<Alarmable> alarmables) {
-        int cores = SysUtils.availableProcessors();
+        int cores = SysUtils.availableProcessors() * SysUtils.envInt("POWERJOB_ALARM_POOL_MULTIPLIER", 1);
         ThreadFactory factory = new ThreadFactoryBuilder().setNameFormat("AlarmPool-%d").build();
         POOL = new ThreadPoolExecutor(cores, cores, 5, TimeUnit.MINUTES, Queues.newLinkedBlockingQueue(), factory);
 

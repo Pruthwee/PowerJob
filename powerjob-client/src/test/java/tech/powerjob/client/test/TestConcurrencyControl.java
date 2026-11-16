@@ -1,5 +1,6 @@
 package tech.powerjob.client.test;
 
+import tech.powerjob.common.utils.SysUtils;
 import tech.powerjob.common.enums.ExecuteType;
 import tech.powerjob.common.enums.ProcessorType;
 import tech.powerjob.common.enums.TimeExpressionType;
@@ -32,7 +33,7 @@ class TestConcurrencyControl extends ClientInitializer {
 
         System.out.println("jobId: " + jobId);
 
-        ForkJoinPool pool = new ForkJoinPool(32);
+        ForkJoinPool pool = new ForkJoinPool(SysUtils.availableProcessors() * SysUtils.envInt("THREAD_POOL_MULTIPLIER", 4));
 
         for (int i = 0; i < 100; i++) {
             String params = "index-" + i;

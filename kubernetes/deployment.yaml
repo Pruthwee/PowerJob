@@ -1,0 +1,123 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: powerjob-br55-con-1721
+  namespace: powerjob-br55-con-1721
+  labels:
+    app: powerjob-br55-con-1721
+    app.kubernetes.io/name: powerjob-br55-con-1721
+    app.kubernetes.io/component: server
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: powerjob-br55-con-1721
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  template:
+    metadata:
+      labels:
+        app: powerjob-br55-con-1721
+        app.kubernetes.io/name: powerjob-br55-con-1721
+    spec:
+      terminationGracePeriodSeconds: 45
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 10001
+        runAsGroup: 10001
+        fsGroup: 10001
+      containers:
+        - name: powerjob-br55-con-1721
+          image: "{{IMAGE_URI}}"
+          imagePullPolicy: Always
+          ports:
+            - name: http
+              containerPort: 7700
+              protocol: TCP
+            - name: akka
+              containerPort: 10086
+              protocol: TCP
+            - name: http-transport
+              containerPort: 10010
+              protocol: TCP
+            - name: mu
+              containerPort: 10077
+              protocol: TCP
+          env:
+            - name: SPRING_PROFILES_ACTIVE
+              value: "{{SPRING_PROFILES_ACTIVE}}"
+            - name: SPRING_DATASOURCE_CORE_JDBC_URL
+              value: "{{DB_URL}}"
+            - name: SPRING_DATASOURCE_CORE_USERNAME
+              value: "{{DB_USERNAME}}"
+            - name: OMS_MONGODB_ENABLE
+              value: "{{OMS_MONGODB_ENABLE}}"
+            - name: MANAGEMENT_ENDPOINT_HEALTH_PROBES_ENABLED
+              value: "true"
+            - name: DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: powerjob-br55-con-1721-secrets
+                  key: DB_PASSWORD
+            - name: ADMIN_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: powerjob-br55-con-1721-secrets
+                  key: ADMIN_PASSWORD
+            - name: OMS_AUTH_SECURITY_JWT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: powerjob-br55-con-1721-secrets
+                  key: OMS_AUTH_SECURITY_JWT_SECRET
+            - name: STORAGE_DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: powerjob-br55-con-1721-secrets
+                  key: STORAGE_DB_PASSWORD
+            - name: MAIL_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: powerjob-br55-con-1721-secrets
+                  key: MAIL_PASSWORD
+            - name: DING_APP_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: powerjob-br55-con-1721-secrets
+                  key: DING_APP_KEY
+            - name: DING_APP_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: powerjob-br55-con-1721-secrets
+                  key: DING_APP_SECRET
+          resources:
+            requests:
+              cpu: "250m"
+              memory: "512Mi"
+            limits:
+              cpu: "500m"
+              memory: "1Gi"
+          volumeMounts:
+            - name: powerjob-data
+              mountPath: /home/powerjob/powerjob
+          livenessProbe:
+            httpGet:
+              path: /actuator/health/liveness
+              port: 7700
+            initialDelaySeconds: 90
+            periodSeconds: 20
+            timeoutSeconds: 5
+            failureThreshold: 5
+          readinessProbe:
+            httpGet:
+              path: /actuator/health/readiness
+              port: 7700
+            initialDelaySeconds: 60
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 6
+      volumes:
+        - name: powerjob-data
+          emptyDir: {}

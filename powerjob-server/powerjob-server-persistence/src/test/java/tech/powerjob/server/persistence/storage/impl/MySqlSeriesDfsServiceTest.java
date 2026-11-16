@@ -16,7 +16,7 @@ class MySqlSeriesDfsServiceTest extends AbstractDfsServiceTest {
     @Override
     protected Optional<DFsService> fetchService() {
 
-        boolean dbAvailable = NetUtils.checkIpPortAvailable("127.0.0.1", 3306);
+        boolean dbAvailable = NetUtils.checkIpPortAvailable(NetUtils.getLoopbackHost(), 3306);
         if (dbAvailable) {
             MySqlSeriesDfsService mySqlSeriesDfsService = new MySqlSeriesDfsService();
 
@@ -27,7 +27,7 @@ class MySqlSeriesDfsServiceTest extends AbstractDfsServiceTest {
                         .setUrl("jdbc:mysql://localhost:3306/powerjob-daily?useUnicode=true&characterEncoding=UTF-8&serverTimezone=Asia/Shanghai")
                         .setUsername("root")
                         .setAutoCreateTable(true)
-                        .setPassword("No1Bug2Please3!");
+                        .setPassword(System.getenv("DB_PASSWORD"));
                 mySqlSeriesDfsService.initDatabase(mySQLProperty);
                 mySqlSeriesDfsService.initTable(mySQLProperty);
 

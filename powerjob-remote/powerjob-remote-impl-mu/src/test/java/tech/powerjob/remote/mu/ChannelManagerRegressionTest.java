@@ -1,5 +1,6 @@
 package tech.powerjob.remote.mu;
 
+import tech.powerjob.common.utils.NetUtils;
 import io.netty.channel.embedded.EmbeddedChannel;
 import org.junit.jupiter.api.Test;
 import tech.powerjob.remote.framework.base.Address;
@@ -16,7 +17,7 @@ class ChannelManagerRegressionTest {
     @Test
     void closingAnOldChannelPreservesItsReplacement() {
         ChannelManager manager = new ChannelManager();
-        Address address = new Address().setHost("127.0.0.1").setPort(19003);
+        Address address = new Address().setHost(NetUtils.getLoopbackHost()).setPort(19003);
         EmbeddedChannel old = new EmbeddedChannel();
         EmbeddedChannel replacement = new EmbeddedChannel();
         try {

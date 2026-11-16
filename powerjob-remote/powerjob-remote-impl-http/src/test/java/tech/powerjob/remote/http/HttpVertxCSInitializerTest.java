@@ -1,5 +1,6 @@
 package tech.powerjob.remote.http;
 
+import tech.powerjob.common.utils.NetUtils;
 import com.google.common.collect.Lists;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Test;
@@ -30,7 +31,7 @@ class HttpVertxCSInitializerTest {
     @Test
     void testHttpVertxCSInitializerTest() throws Exception {
 
-        final Address address = new Address().setPort(7890).setHost("127.0.0.1");
+        final Address address = new Address().setPort(7890).setHost(NetUtils.getLoopbackHost());
 
         EngineConfig engineConfig = new EngineConfig()
                 .setType(Protocol.HTTP.name())

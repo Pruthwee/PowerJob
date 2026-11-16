@@ -1,5 +1,6 @@
 package tech.powerjob.worker.persistence;
 
+import tech.powerjob.common.utils.NetUtils;
 import tech.powerjob.worker.common.constants.TaskStatus;
 
 import java.nio.charset.StandardCharsets;
@@ -19,7 +20,7 @@ public class AbstractTaskDAOTest {
         taskDO.setSubInstanceId(instanceId);
         taskDO.setTaskName("TEST_TASK");
         taskDO.setTaskContent("TEST_CONTENT".getBytes(StandardCharsets.UTF_8));
-        taskDO.setAddress("127.0.0.1:10086");
+        taskDO.setAddress(NetUtils.getLoopbackHost() + ":10086");
         taskDO.setStatus(taskStatus.getValue());
         taskDO.setResult("SUCCESS");
         taskDO.setFailedCnt(0);

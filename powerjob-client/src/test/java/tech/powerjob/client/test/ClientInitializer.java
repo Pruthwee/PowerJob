@@ -1,5 +1,6 @@
 package tech.powerjob.client.test;
 
+import tech.powerjob.common.utils.NetUtils;
 import com.google.common.collect.Lists;
 import org.junit.jupiter.api.BeforeAll;
 import tech.powerjob.client.IPowerJobClient;
@@ -17,6 +18,6 @@ public class ClientInitializer {
 
     @BeforeAll
     public static void initClient() throws Exception {
-        powerJobClient = new PowerJobClient(Lists.newArrayList("127.0.0.1:7700", "127.0.0.1:7701"), "powerjob-worker-samples", "powerjob123");
+        powerJobClient = new PowerJobClient(Lists.newArrayList(NetUtils.getLoopbackHost() + ":7700", NetUtils.getLoopbackHost() + ":7701"), "powerjob-worker-samples", "powerjob123");
     }
 }

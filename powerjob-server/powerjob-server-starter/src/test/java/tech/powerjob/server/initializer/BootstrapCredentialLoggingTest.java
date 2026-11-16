@@ -24,7 +24,7 @@ import static org.mockito.Mockito.*;
 class BootstrapCredentialLoggingTest {
     @Test
     void configuredPasswordAndLoginTokenAreNotLoggedDuringInitialization() {
-        String password = "synthetic-admin-password-canary";
+        String password = "canary-" + java.util.UUID.randomUUID();
         String jwt = "synthetic-session-token-canary";
         SystemInitializeServiceImpl initializer = new SystemInitializeServiceImpl();
         PwjbUserWebService users = mock(PwjbUserWebService.class);

@@ -1,5 +1,6 @@
 package tech.powerjob.worker.persistence;
 
+import tech.powerjob.common.utils.SysUtils;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Test;
@@ -52,7 +53,7 @@ public class TaskDAOPerformanceTest extends AbstractTaskDAOTest {
 
         AtomicLong atomicLong = new AtomicLong();
 
-        ForkJoinPool pool = new ForkJoinPool(256);
+        ForkJoinPool pool = new ForkJoinPool(SysUtils.availableProcessors() * SysUtils.envInt("THREAD_POOL_MULTIPLIER", 32));
 
         CountDownLatch latch = new CountDownLatch(num);
 

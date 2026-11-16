@@ -31,17 +31,19 @@ public class ExecutorManager {
 
 
         final int availableProcessors = SysUtils.availableProcessors();
+        // io 密集型任务线程倍数，可通过环境变量调整
+        final int lightTaskThreadMultiplier = SysUtils.envInt("POWERJOB_LIGHT_TASK_THREAD_MULTIPLIER", 10);
         // 初始化定时线程池
         ThreadFactory coreThreadFactory = new ThreadFactoryBuilder().setNameFormat("powerjob-worker-core-%d").build();
         coreExecutor =  new ScheduledThreadPoolExecutor(3, coreThreadFactory);
 
         ThreadFactory lightTaskReportFactory = new ThreadFactoryBuilder().setNameFormat("powerjob-worker-light-task-status-check-%d").build();
         // 都是 io 密集型任务
-        lightweightTaskStatusCheckExecutor =  new ScheduledThreadPoolExecutor(availableProcessors * 10, lightTaskReportFactory);
+        lightweightTaskStatusCheckExecutor =  new ScheduledThreadPoolExecutor(availableProcessors * lightTaskThreadMultiplier, lightTaskReportFactory);
 
         ThreadFactory lightTaskExecuteFactory = new ThreadFactoryBuilder().setNameFormat("powerjob-worker-light-task-execute-%d").build();
         // 大部分任务都是 io 密集型
-        lightweightTaskExecutorService = new ThreadPoolExecutor(availableProcessors * 10,availableProcessors * 10, 120L, TimeUnit.SECONDS,
+        lightweightTaskExecutorService = new ThreadPoolExecutor(availableProcessors * lightTaskThreadMultiplier, availableProcessors * lightTaskThreadMultiplier, 120L, TimeUnit.SECONDS,
                 new ArrayBlockingQueue<>((workerConfig.getMaxLightweightTaskNum() * 2),true), lightTaskExecuteFactory, new ThreadPoolExecutor.AbortPolicy());
 
     }

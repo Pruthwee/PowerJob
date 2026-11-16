@@ -1,5 +1,6 @@
 package tech.powerjob.remote.mu;
 
+import tech.powerjob.common.utils.NetUtils;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelInboundHandlerAdapter;
@@ -29,14 +30,14 @@ class MuConnectionReplacementTest {
         Channel peer = null;
         EmbeddedChannel replacement = new EmbeddedChannel();
         MuConnectionManager manager = new MuConnectionManager(clientWorkers, new ChannelManager(),
-                new ChannelInboundHandlerAdapter(), new Address().setHost("127.0.0.1").setPort(0));
+                new ChannelInboundHandlerAdapter(), new Address().setHost(NetUtils.getLoopbackHost()).setPort(0));
         try {
             peer = new ServerBootstrap().group(boss, peerWorkers).channel(NioServerSocketChannel.class)
                     .childHandler(new ChannelInitializer<SocketChannel>() {
                         @Override
                         protected void initChannel(SocketChannel channel) { }
-                    }).bind("127.0.0.1", 0).sync().channel();
-            Address address = new Address().setHost("127.0.0.1")
+                    }).bind(NetUtils.getLoopbackHost(), 0).sync().channel();
+            Address address = new Address().setHost(NetUtils.getLoopbackHost())
                     .setPort(((InetSocketAddress) peer.localAddress()).getPort());
             Channel old = manager.getOrCreateConnection(address).get(3, TimeUnit.SECONDS);
             String key = address.getHost() + ":" + address.getPort();

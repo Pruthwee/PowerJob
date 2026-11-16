@@ -1,5 +1,6 @@
 package tech.powerjob.remote.framework.engine;
 
+import tech.powerjob.common.utils.NetUtils;
 import com.google.common.collect.Sets;
 import org.junit.jupiter.api.Test;
 import tech.powerjob.remote.framework.base.Address;
@@ -22,7 +23,7 @@ class RemoteEngineTest {
 
         EngineConfig engineConfig = new EngineConfig();
         engineConfig.setType("TEST");
-        engineConfig.setBindAddress(new Address().setHost("127.0.0.1").setPort(10086));
+        engineConfig.setBindAddress(new Address().setHost(NetUtils.getLoopbackHost()).setPort(10086));
         remoteEngine.start(engineConfig);
     }
 }

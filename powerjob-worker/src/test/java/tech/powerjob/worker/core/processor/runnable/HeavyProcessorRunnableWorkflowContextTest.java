@@ -1,5 +1,6 @@
 package tech.powerjob.worker.core.processor.runnable;
 
+import tech.powerjob.common.utils.NetUtils;
 import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.Logger;
 import ch.qos.logback.classic.spi.ILoggingEvent;
@@ -116,7 +117,7 @@ class HeavyProcessorRunnableWorkflowContextTest {
         runtime.setTransporter(transporter);
         Queue<ProcessorReportTaskStatusReq> retries = new ArrayDeque<>();
 
-        HeavyProcessorRunnable runnable = new HeavyProcessorRunnable(instanceInfo, "127.0.0.1:27777", task,
+        HeavyProcessorRunnable runnable = new HeavyProcessorRunnable(instanceInfo, NetUtils.getLoopbackHost() + ":27777", task,
                 new ProcessorBean().setProcessor(processor), null, retries, runtime);
         runnable.innerRun();
 

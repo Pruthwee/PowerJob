@@ -1,55 +1,42 @@
-# 使用说明 V4.3.1
-# 1. PowerJob 根目录执行：docker-compose up
-# 2. 静静等待服务启动。
-
-version: '3'
+# PowerJob server (powerjob-br55-con-1721) - the application container only.
+# External services (MySQL, MongoDB, SMTP...) are NOT part of this file: reach them through the variables below.
+#
+# Usage (credentials come from the shell that runs compose, never from this file):
+#   export DB_PASSWORD='...' ADMIN_PASSWORD='...' OMS_AUTH_SECURITY_JWT_SECRET='<random, 32+ chars>'
+#   export DB_URL='jdbc:mysql://<db-host>:3306/powerjob-product?useUnicode=true&characterEncoding=UTF-8&serverTimezone=UTC'
+#   docker compose up
 services:
-  powerjob-mysql:
+  powerjob-br55-con-1721:
+    image: powerjob-br55-con-1721:latest
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: powerjob-br55-con-1721
+    restart: unless-stopped
+    ports:
+      - "7700:7700"     # HTTP: web UI, OpenAPI, /actuator/health
+      - "10086:10086"   # AKKA transporter
+      - "10010:10010"   # HTTP transporter
+      - "10077:10077"   # MU transporter
     environment:
-      MYSQL_ROOT_HOST: "%"
-      MYSQL_ROOT_PASSWORD: No1Bug2Please3!
-    restart: always
-    container_name: powerjob-mysql
-    image: powerjob/powerjob-mysql:latest
-    ports:
-      - "3307:3306"
+      SPRING_PROFILES_ACTIVE: "${SPRING_PROFILES_ACTIVE:-product}"
+      JAVA_OPTS: "${JAVA_OPTS:--Xmx512m -Xms256m -XX:+UseContainerSupport -XX:MaxRAMPercentage=75.0}"
+      TZ: "UTC"
+      # External MySQL (reached through environment variables)
+      SPRING_DATASOURCE_CORE_JDBC_URL: "${DB_URL:?set DB_URL}"
+      SPRING_DATASOURCE_CORE_USERNAME: "${DB_USERNAME:-root}"
+      OMS_MONGODB_ENABLE: "${OMS_MONGODB_ENABLE:-false}"
+      # Credentials: the names the application's property placeholders read
+      DB_PASSWORD: "${DB_PASSWORD:?set DB_PASSWORD}"
+      ADMIN_PASSWORD: "${ADMIN_PASSWORD:?set ADMIN_PASSWORD}"
+      OMS_AUTH_SECURITY_JWT_SECRET: "${OMS_AUTH_SECURITY_JWT_SECRET:?set OMS_AUTH_SECURITY_JWT_SECRET}"
+      STORAGE_DB_PASSWORD: "${STORAGE_DB_PASSWORD:-}"
+      MAIL_PASSWORD: "${MAIL_PASSWORD:-}"
+      DING_APP_KEY: "${DING_APP_KEY:-}"
+      DING_APP_SECRET: "${DING_APP_SECRET:-}"
+      # Optional thread-pool tuning (multipliers of the CPUs the container sees)
+      POWERJOB_TIMING_POOL_MAX_MULTIPLIER: "${POWERJOB_TIMING_POOL_MAX_MULTIPLIER:-4}"
+      POWERJOB_BG_POOL_CORE_MULTIPLIER: "${POWERJOB_BG_POOL_CORE_MULTIPLIER:-8}"
+      POWERJOB_BG_POOL_MAX_MULTIPLIER: "${POWERJOB_BG_POOL_MAX_MULTIPLIER:-16}"
     volumes:
-      - ./powerjob-data/powerjob-mysql:/var/lib/mysql
-    command: --lower_case_table_names=1
-
-  powerjob-server:
-    container_name: powerjob-server
-    image: powerjob/powerjob-server:latest
-    restart: always
-    depends_on:
-      - powerjob-mysql
-    environment:
-      JVMOPTIONS: "-Xmx512m"
-      PARAMS: "--oms.mongodb.enable=false --spring.datasource.core.jdbc-url=jdbc:mysql://powerjob-mysql:3306/powerjob-daily?useUnicode=true&characterEncoding=UTF-8&serverTimezone=Asia/Shanghai"
-    ports:
-      - "7700:7700"
-      - "10086:10086"
-      - "10010:10010"
-      - "10077:10077"
-    volumes:
-      - ./powerjob-data/powerjob-server:/root/powerjob/server/
-
-  powerjob-worker-samples:
-    container_name: powerjob-worker-samples
-    image: powerjob/powerjob-worker-samples:latest
-    restart: always
-    depends_on:
-      - powerjob-mysql
-      - powerjob-server
-#    environment:
-#      PARAMS: "--powerjob.worker.server-address=powerjob-server:7700"
-    ports:
-      - "8081:8081"
-      - "27777:27777"
-    volumes:
-      - ./powerjob-data/powerjob-worker-samples:/root/powerjob/worker
-      - ./others/script/wait-for-it.sh:/wait-for-it.sh
-    entrypoint:
-      - "sh"
-      - "-c"
-      - "chmod +x wait-for-it.sh && ./wait-for-it.sh powerjob-server:7700 --strict -- java -Xmx512m -jar /powerjob-worker-samples.jar --powerjob.worker.server-address=powerjob-server:7700"
+      - ./powerjob-data/powerjob-server:/home/powerjob/powerjob

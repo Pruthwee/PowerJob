@@ -1,4 +1,5 @@
 import tech.powerjob.common.utils.SegmentLock;
+import tech.powerjob.common.utils.SysUtils;
 import org.junit.jupiter.api.Test;
 
 import java.util.concurrent.ExecutorService;
@@ -16,7 +17,7 @@ public class SegmentLockTest {
     public void testLock() throws Exception {
         int lockId = 10086;
         SegmentLock lock = new SegmentLock(4);
-        ExecutorService pool = Executors.newFixedThreadPool(2);
+        ExecutorService pool = Executors.newFixedThreadPool(SysUtils.envInt("TEST_LOCK_THREADS", 2));
         pool.execute(() -> {
             System.out.println("before lock A");
             lock.lockInterruptibleSafe(lockId);
@@ -36,7 +37,7 @@ public class SegmentLockTest {
     public void testUnLock() throws Exception {
         int lockId = 10086;
         SegmentLock lock = new SegmentLock(4);
-        ExecutorService pool = Executors.newFixedThreadPool(2);
+        ExecutorService pool = Executors.newFixedThreadPool(SysUtils.envInt("TEST_LOCK_THREADS", 2));
         pool.execute(() -> {
             System.out.println("before lock A");
             lock.lockInterruptibleSafe(lockId);

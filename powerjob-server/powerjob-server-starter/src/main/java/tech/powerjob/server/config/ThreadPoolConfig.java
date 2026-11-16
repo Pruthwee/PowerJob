@@ -29,7 +29,7 @@ public class ThreadPoolConfig {
     public TaskExecutor getTimingPool() {
         ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
         executor.setCorePoolSize(SysUtils.availableProcessors());
-        executor.setMaxPoolSize(SysUtils.availableProcessors() * 4);
+        executor.setMaxPoolSize(SysUtils.availableProcessors() * SysUtils.envInt("POWERJOB_TIMING_POOL_MAX_MULTIPLIER", 4));
         // use SynchronousQueue
         executor.setQueueCapacity(0);
         executor.setKeepAliveSeconds(60);
@@ -41,8 +41,8 @@ public class ThreadPoolConfig {
     @Bean(PJThreadPool.BACKGROUND_POOL)
     public AsyncTaskExecutor initBackgroundPool() {
         ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
-        executor.setCorePoolSize(SysUtils.availableProcessors() * 8);
-        executor.setMaxPoolSize(SysUtils.availableProcessors() * 16);
+        executor.setCorePoolSize(SysUtils.availableProcessors() * SysUtils.envInt("POWERJOB_BG_POOL_CORE_MULTIPLIER", 8));
+        executor.setMaxPoolSize(SysUtils.availableProcessors() * SysUtils.envInt("POWERJOB_BG_POOL_MAX_MULTIPLIER", 16));
         executor.setQueueCapacity(8192);
         executor.setKeepAliveSeconds(60);
         executor.setThreadNamePrefix("PJ-BG-");
@@ -68,7 +68,7 @@ public class ThreadPoolConfig {
     @Bean
     public TaskScheduler taskScheduler() {
         ThreadPoolTaskScheduler scheduler = new ThreadPoolTaskScheduler();
-        scheduler.setPoolSize(Math.max(SysUtils.availableProcessors() * 8, 32));
+        scheduler.setPoolSize(Math.max(SysUtils.availableProcessors() * SysUtils.envInt("POWERJOB_SCHEDULER_POOL_MULTIPLIER", 8), SysUtils.envInt("POWERJOB_SCHEDULER_POOL_MIN", 32)));
         scheduler.setThreadNamePrefix("PJ-DEFAULT-");
         scheduler.setDaemon(true);
         return scheduler;

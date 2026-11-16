@@ -17,6 +17,7 @@ import tech.powerjob.common.request.http.SaveJobInfoRequest;
 import tech.powerjob.common.response.InstanceInfoDTO;
 import tech.powerjob.common.response.JobInfoDTO;
 import tech.powerjob.common.response.ResultDTO;
+import tech.powerjob.common.utils.NetUtils;
 import tech.powerjob.official.processors.util.CommonUtils;
 import tech.powerjob.worker.core.processor.ProcessResult;
 import tech.powerjob.worker.core.processor.TaskContext;
@@ -157,13 +158,22 @@ public class OpenApiTester implements BasicProcessor {
         return newJobInfo;
     }
 
+    private static List<String> defaultServerAddressList() {
+        String fromEnv = System.getenv("POWERJOB_SERVER_ADDRESS");
+        if (fromEnv != null && !fromEnv.trim().isEmpty()) {
+            return Lists.newArrayList(fromEnv.trim().split(","));
+        }
+        String host = NetUtils.getLoopbackHost();
+        return Lists.newArrayList(host + ":7700", host + ":7701");
+    }
+
     private IPowerJobClient fetchClient(TaskContext context) {
         String params = CommonUtils.parseParams(context);
         Config clientConfig = Optional.ofNullable(params).map(x -> JSONObject.parseObject(params, Config.class)).orElse(new Config());
 
         String appName = Optional.ofNullable(clientConfig.getAppName()).orElse("powerjob-worker-samples");
         String password = Optional.ofNullable(clientConfig.getPassword()).orElse("powerjob123");
-        List<String> addressList = Optional.ofNullable(clientConfig.getAddressList()).orElse(Lists.newArrayList("127.0.0.1:7700", "127.0.0.1:7701"));
+        List<String> addressList = Optional.ofNullable(clientConfig.getAddressList()).orElse(defaultServerAddressList());
 
         String key = String.format("client_%s_%s_%s", appName, password, addressList);
 

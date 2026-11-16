@@ -9,6 +9,8 @@ import tech.powerjob.common.PowerSerializable;
 import tech.powerjob.common.response.AskResponse;
 import tech.powerjob.common.serialize.JsonUtils;
 import tech.powerjob.common.utils.CollectionUtils;
+import tech.powerjob.common.utils.NetUtils;
+import org.apache.commons.lang3.StringUtils;
 import tech.powerjob.remote.framework.base.URL;
 import tech.powerjob.server.common.utils.TestUtils;
 import tech.powerjob.server.core.alarm.AlarmCenter;
@@ -91,6 +93,6 @@ public class TestController {
     }
 
     private String localUrlPath() {
-        return String.format("http://127.0.0.1:%d", port);
+        return String.format("http://%s:%d", StringUtils.defaultIfBlank(System.getenv("TEST_CONTROLLER_HOST"), NetUtils.getLoopbackHost()), port);
     }
 }

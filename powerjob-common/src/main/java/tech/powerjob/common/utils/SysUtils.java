@@ -19,9 +19,26 @@ public class SysUtils {
     public static int availableProcessors() {
         String property = System.getProperty(PowerJobDKey.SYS_AVAILABLE_PROCESSORS);
         if (StringUtils.isEmpty(property)) {
-            return Runtime.getRuntime().availableProcessors();
+            // the container's CPU count can be pinned from the environment (e.g. a Kubernetes ConfigMap)
+            int fromEnv = envInt("POWERJOB_AVAILABLE_PROCESSORS", 0);
+            return fromEnv > 0 ? fromEnv : Runtime.getRuntime().availableProcessors();
         }
         return Integer.parseInt(property);
+    }
+
+    /**
+     * Read an integer tuning value (thread pool multiplier, queue size...) from an environment variable,
+     * so that it can be set per environment (e.g. from a Kubernetes ConfigMap) without rebuilding the image.
+     * @param envName environment variable name
+     * @param defaultValue value used when the variable is not set
+     * @return the configured value
+     */
+    public static int envInt(String envName, int defaultValue) {
+        String value = System.getenv(envName);
+        if (StringUtils.isBlank(value)) {
+            return defaultValue;
+        }
+        return Integer.parseInt(value.trim());
     }
 
     /**

@@ -1,5 +1,6 @@
 package tech.powerjob.server.web;
 
+import tech.powerjob.common.utils.NetUtils;
 import ch.qos.logback.classic.Logger;
 import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.core.read.ListAppender;
@@ -30,7 +31,7 @@ class WebLogCredentialTest {
         when(signature.getName()).thenReturn("syntheticLogin");
         when(point.getArgs()).thenReturn(new Object[]{Collections.singletonMap(field, canary)});
         MockHttpServletRequest request = new MockHttpServletRequest("POST", "/synthetic-login");
-        request.setRemoteAddr("127.0.0.1");
+        request.setRemoteAddr(NetUtils.getLoopbackHost());
         request.setQueryString("token=" + canary);
         RequestContextHolder.setRequestAttributes(new ServletRequestAttributes(request));
         Logger logger = (Logger) LoggerFactory.getLogger("WEB_LOG");

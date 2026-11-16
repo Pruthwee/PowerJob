@@ -1,5 +1,6 @@
 package tech.powerjob.worker.core.tracker.task.light;
 
+import tech.powerjob.common.utils.NetUtils;
 import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.Logger;
 import ch.qos.logback.classic.spi.ILoggingEvent;
@@ -96,7 +97,7 @@ class LightTaskTrackerWorkflowContextTest {
         ExecutorManager executors = new ExecutorManager(config);
         WorkerAppInfo app = new WorkerAppInfo(); app.setAppId(1L);
         WorkerRuntime runtime = new WorkerRuntime(); runtime.setAppInfo(app); runtime.setWorkerConfig(config);
-        runtime.setExecutorManager(executors); runtime.setWorkerAddress("127.0.0.1:27777");
+        runtime.setExecutorManager(executors); runtime.setWorkerAddress(NetUtils.getLoopbackHost() + ":27777");
         CompletableFuture<TaskTrackerReportInstanceStatusReq> report = new CompletableFuture<>();
         CountDownLatch constructed = new CountDownLatch(1);
         runtime.setProcessorLoader(definition -> new ProcessorBean().setProcessor(context -> {

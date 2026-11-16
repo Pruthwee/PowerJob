@@ -22,7 +22,7 @@ public class TimezoneTest {
 
         System.out.println("timestamp before GMT: " + System.currentTimeMillis());
 
-        TimeZone.setDefault(TimeZone.getTimeZone("GMT"));
+        TimeZone.setDefault(TimeZone.getTimeZone(System.getenv().getOrDefault("TEST_TIME_ZONE", "GMT")));
         TimeZone timeZone = TimeZone.getDefault();
         System.out.println(timeZone.getDisplayName());
         System.out.println(new Date());

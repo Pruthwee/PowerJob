@@ -1,5 +1,6 @@
 package tech.powerjob.client;
 
+import tech.powerjob.common.utils.NetUtils;
 import com.alibaba.fastjson.JSON;
 import com.sun.net.httpserver.HttpServer;
 import org.junit.jupiter.api.Test;
@@ -51,7 +52,7 @@ class WorkflowNodeResponseTest {
     }
 
     private WorkflowNodeInfoDTO saveNode(String nameField) throws Exception {
-        HttpServer server = HttpServer.create(new InetSocketAddress("127.0.0.1", 0), 0);
+        HttpServer server = HttpServer.create(new InetSocketAddress(NetUtils.getLoopbackHost(), 0), 0);
         AtomicInteger writes = new AtomicInteger();
         server.createContext("/openApi/authApp", exchange -> {
             while (exchange.getRequestBody().read() != -1) { /* Consume without logging credentials. */ }
@@ -75,7 +76,7 @@ class WorkflowNodeResponseTest {
             exchange.close();
         });
         server.start();
-        try (PowerJobClient client = new PowerJobClient("127.0.0.1:" + server.getAddress().getPort(), "test-app", "test-password")) {
+        try (PowerJobClient client = new PowerJobClient(NetUtils.getLoopbackHost() + ":" + server.getAddress().getPort(), "test-app", "test-password")) {
             SaveWorkflowNodeRequest request = new SaveWorkflowNodeRequest();
             request.setJobId(23L);
             ResultDTO<List<WorkflowNodeInfoDTO>> result = client.saveWorkflowNode(Collections.singletonList(request));

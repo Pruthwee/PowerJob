@@ -11,6 +11,7 @@ import com.typesafe.config.ConfigFactory;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import tech.powerjob.common.serialize.JsonUtils;
+import tech.powerjob.common.utils.NetUtils;
 import tech.powerjob.common.utils.SysUtils;
 import tech.powerjob.remote.framework.actor.ActorInfo;
 import tech.powerjob.remote.framework.base.Address;
@@ -60,7 +61,7 @@ public class AkkaCSInitializer implements CSInitializer {
             overrideConfig.put("akka.remote.artery.canonical.hostname", externalAddress.getHost());
             overrideConfig.put("akka.remote.artery.canonical.port", externalAddress.getPort());
 
-            overrideConfig.put("akka.remote.artery.bind.hostname", "0.0.0.0");
+            overrideConfig.put("akka.remote.artery.bind.hostname", StringUtils.defaultIfBlank(System.getenv("AKKA_BIND_HOSTNAME"), NetUtils.getAnyHost()));
             overrideConfig.put("akka.remote.artery.bind.port", bindAddress.getPort());
 
             log.info("[PowerJob-AKKA] exist externalAddress[{}], final overrideConfig: {}", externalAddress, overrideConfig);

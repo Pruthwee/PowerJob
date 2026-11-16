@@ -9,6 +9,7 @@ import tech.powerjob.common.enums.ProcessorType;
 import tech.powerjob.common.enums.TimeExpressionType;
 import tech.powerjob.common.utils.CollectionUtils;
 import tech.powerjob.common.utils.CommonUtils;
+import tech.powerjob.common.utils.SysUtils;
 import tech.powerjob.common.enhance.SafeRunnable;
 import tech.powerjob.worker.common.WorkerRuntime;
 import tech.powerjob.worker.common.constants.TaskStatus;
@@ -102,7 +103,7 @@ public class ProcessorTracker {
             this.taskTrackerAddress = request.getTaskTrackerAddress();
 
             this.omsLogger = OmsLoggerFactory.build(instanceId, request.getLogConfig(), workerRuntime);
-            this.statusReportRetryQueue = Queues.newLinkedBlockingQueue();
+            this.statusReportRetryQueue = Queues.newLinkedBlockingQueue(SysUtils.envInt("POWERJOB_STATUS_RETRY_QUEUE_SIZE", Integer.MAX_VALUE));
             this.lastIdleTime = -1L;
             this.lastCompletedTaskCount = 0L;
 
@@ -208,7 +209,8 @@ public class ProcessorTracker {
      */
     private void initThreadPool() {
 
-        int poolSize = calThreadPoolSize();
+        // upper bound configurable from the environment (default: no extra limit)
+        int poolSize = Math.min(calThreadPoolSize(), SysUtils.envInt("POWERJOB_PROCESSOR_POOL_MAX_SIZE", Integer.MAX_VALUE));
         // 待执行队列，为了防止对内存造成较大压力，内存队列不能太大
         BlockingQueue<Runnable> queue = new ArrayBlockingQueue<>(THREAD_POOL_QUEUE_MAX_SIZE);
         // 自定义线程池中线程名称 (PowerJob Processor Pool -> PPP)

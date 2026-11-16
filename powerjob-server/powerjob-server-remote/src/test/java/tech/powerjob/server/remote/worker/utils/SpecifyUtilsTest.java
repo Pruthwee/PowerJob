@@ -13,18 +13,29 @@ import static org.junit.jupiter.api.Assertions.*;
  */
 class SpecifyUtilsTest {
 
+    private static final String WORKER_IP = fixtureIp("TEST_WORKER_IP", 192, 168, 1, 1);
+    private static final String OTHER_IP = fixtureIp("TEST_OTHER_IP", 172, 168, 1, 1);
+
+    private static String fixtureIp(String envName, int... octets) {
+        String fromEnv = System.getenv(envName);
+        if (fromEnv != null && !fromEnv.trim().isEmpty()) {
+            return fromEnv.trim();
+        }
+        return String.format("%d.%d.%d.%d", octets[0], octets[1], octets[2], octets[3]);
+    }
+
     @Test
     void match() {
 
         WorkerInfo workerInfo = new WorkerInfo();
-        workerInfo.setAddress("192.168.1.1");
+        workerInfo.setAddress(WORKER_IP);
         workerInfo.setTag("tag1");
 
-        assert SpecifyUtils.match(workerInfo, "192.168.1.1");
-        assert SpecifyUtils.match(workerInfo, "192.168.1.1,192.168.1.2,192.168.1.3,192.168.1.4");
+        assert SpecifyUtils.match(workerInfo, WORKER_IP);
+        assert SpecifyUtils.match(workerInfo, WORKER_IP + ",192.168.1.2,192.168.1.3,192.168.1.4");
 
-        assert !SpecifyUtils.match(workerInfo, "172.168.1.1");
-        assert !SpecifyUtils.match(workerInfo, "172.168.1.1,172.168.1.2,172.168.1.3");
+        assert !SpecifyUtils.match(workerInfo, OTHER_IP);
+        assert !SpecifyUtils.match(workerInfo, OTHER_IP + ",172.168.1.2,172.168.1.3");
 
         assert SpecifyUtils.match(workerInfo, "tag1");
         assert SpecifyUtils.match(workerInfo, "tag1,tag2");

@@ -23,7 +23,7 @@ public class InstanceTimeWheelService {
     /**
      * 精确调度时间轮，每 1MS 走一格
      */
-    private static final Timer TIMER = new HashedWheelTimer(1, 4096, SysUtils.availableProcessors() * 4);
+    private static final Timer TIMER = new HashedWheelTimer(1, 4096, SysUtils.availableProcessors() * SysUtils.envInt("POWERJOB_TIMEWHEEL_THREAD_MULTIPLIER", 4));
     /**
      * 非精确调度时间轮，用于处理高延迟任务，每 10S 走一格
      */

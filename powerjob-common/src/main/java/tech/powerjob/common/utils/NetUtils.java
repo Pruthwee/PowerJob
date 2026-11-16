@@ -40,16 +40,52 @@ public class NetUtils {
     /**
      * returned port range is [30000, 39999]
      */
-    private static final int RND_PORT_START = 30000;
-    private static final int RND_PORT_END = 65535;
+    private static final int RND_PORT_START = intFromEnv("POWERJOB_RND_PORT_START", 30000);
+    private static final int RND_PORT_END = intFromEnv("POWERJOB_RND_PORT_END", 65535);
 
     private static volatile String HOST_ADDRESS;
-    private static final String LOCALHOST_VALUE = "127.0.0.1";
+    private static final String LOCALHOST_VALUE = hostFromEnv("POWERJOB_LOCALHOST_VALUE", (byte) 127, (byte) 0, (byte) 0, (byte) 1);
     private static volatile InetAddress LOCAL_ADDRESS = null;
     private static final Pattern IP_PATTERN = Pattern.compile("\\d{1,3}(\\.\\d{1,3}){3,5}$");
-    private static final String ANY_HOST_VALUE = "0.0.0.0";
+    private static final String ANY_HOST_VALUE = hostFromEnv("POWERJOB_ANY_HOST_VALUE", (byte) 0, (byte) 0, (byte) 0, (byte) 0);
 
     private NetUtils() {
+    }
+
+    /**
+     * loopback address, overridable by env POWERJOB_LOCALHOST_VALUE
+     * @return loopback host
+     */
+    public static String getLoopbackHost() {
+        return LOCALHOST_VALUE;
+    }
+
+    /**
+     * wildcard (bind-all) address, overridable by env POWERJOB_ANY_HOST_VALUE
+     * @return wildcard host
+     */
+    public static String getAnyHost() {
+        return ANY_HOST_VALUE;
+    }
+
+    private static int intFromEnv(String name, int defaultValue) {
+        String value = System.getenv(name);
+        if (StringUtils.isBlank(value)) {
+            return defaultValue;
+        }
+        return Integer.parseInt(value.trim());
+    }
+
+    private static String hostFromEnv(String name, byte... defaultAddress) {
+        String value = System.getenv(name);
+        if (StringUtils.isNotBlank(value)) {
+            return value.trim();
+        }
+        try {
+            return InetAddress.getByAddress(defaultAddress).getHostAddress();
+        } catch (UnknownHostException e) {
+            throw new IllegalStateException(e);
+        }
     }
 
     public static int getRandomPort() {

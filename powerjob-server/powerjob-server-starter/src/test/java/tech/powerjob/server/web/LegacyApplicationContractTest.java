@@ -25,6 +25,8 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 class LegacyApplicationContractTest {
+
+    private static final String FIXTURE_PASSWORD = "fx-" + UUID.randomUUID();
     @AfterEach void clearLogin() { LoginUserHolder.clean(); }
 
     @ParameterizedTest
@@ -38,7 +40,7 @@ class LegacyApplicationContractTest {
         when(apps.save(any())).thenAnswer(i -> { AppInfoDO saved = i.getArgument(0); saved.setId(101L); return saved; });
         AppWebServiceImpl service = new AppWebServiceImpl(auth, apps, mock(AppInfoRepository.class), namespaces, mock(WorkerClusterQueryService.class));
         ModifyAppInfoRequest req = new ModifyAppInfoRequest(); req.setId(update ? 101L : null);
-        req.setAppName("fixture"); req.setPassword("synthetic-password"); req.setTitle("title");
+        req.setAppName("fixture"); req.setPassword(FIXTURE_PASSWORD); req.setTitle("title");
         req.setNamespaceId(201L); req.setExtra("{\"allowedBecomeAdminByPassword\":false}");
         ComponentUserRoleInfo roles = new ComponentUserRoleInfo().setQa(Collections.singletonList(7L));
         req.setComponentUserRoleInfo(roles);
@@ -60,10 +62,10 @@ class LegacyApplicationContractTest {
         AppInfoDO app = new AppInfoDO(); app.setId(101L); app.setNamespaceId(201L);
         app.setGmtCreate(new Date()); app.setGmtModified(new Date());
         when(auth.hasPermission(RoleScope.APP, 101L, Permission.READ)).thenReturn(canRead);
-        when(passwords.fetchOriginAppPassword(app)).thenReturn("synthetic-password");
+        when(passwords.fetchOriginAppPassword(app)).thenReturn(FIXTURE_PASSWORD);
         when(apps.list(any())).thenReturn(new PageImpl<>(Collections.singletonList(app)));
         AppInfoController controller = new AppInfoController(apps, auth, mock(UserWebService.class), passwords, mock(NamespaceWebService.class));
-        assertEquals(canRead ? "synthetic-password" : AuthConstants.TIPS_NO_PERMISSION_TO_SEE,
+        assertEquals(canRead ? FIXTURE_PASSWORD : AuthConstants.TIPS_NO_PERMISSION_TO_SEE,
                 controller.listAppInfoByQuery(new QueryAppInfoRequest()).getData().getData().get(0).getPassword());
         verify(auth, never()).hasPermission(RoleScope.APP, 101L, Permission.SU);
     }

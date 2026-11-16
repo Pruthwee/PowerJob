@@ -1,5 +1,6 @@
 package tech.powerjob.client.service.impl;
 
+import tech.powerjob.common.utils.NetUtils;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpServer;
 import com.sun.net.httpserver.HttpsConfigurator;
@@ -35,7 +36,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 import static org.junit.jupiter.api.Assertions.*;
 
 class ClientTransportCompatibilityTest {
-    private static final String STORE_PASSWORD = "local-fixture-only";
+    private static final String STORE_PASSWORD = "fx-" + java.util.UUID.randomUUID();
+    private static final String CLIENT_PASSWORD = "fx-" + java.util.UUID.randomUUID();
     private static final byte[] AUTH = bytes("{\"success\":true,\"data\":{\"appId\":17,\"token\":\"local-fixture-token\"}}");
     private static final byte[] ID = bytes("{\"success\":true,\"data\":9007199254740993}");
     @TempDir static Path directory;
@@ -162,7 +164,7 @@ class ClientTransportCompatibilityTest {
         try (Endpoint first = new Endpoint(null); Endpoint second = new Endpoint(null);
              PowerJobClient client = new PowerJobClient(config(false, first.address()))) {
             first.mode = "redirect";
-            first.redirect = "http://127.0.0.1:" + second.server.getAddress().getPort() + "/openApi/runJob2";
+            first.redirect = "http://" + NetUtils.getLoopbackHost() + ":" + second.server.getAddress().getPort() + "/openApi/runJob2";
             assertTrue(client.runJob(1L).isSuccess());
             assertEquals(1, first.calls.get());
             assertEquals(1, second.calls.get());
@@ -170,7 +172,7 @@ class ClientTransportCompatibilityTest {
     }
 
     private static ClientConfig config(boolean tls, String... addresses) {
-        return new ClientConfig().setAppName("local-test").setPassword("local-test-password").setProtocol(tls ? Protocol.HTTPS : Protocol.HTTP)
+        return new ClientConfig().setAppName("local-test").setPassword(CLIENT_PASSWORD).setProtocol(tls ? Protocol.HTTPS : Protocol.HTTP)
                 .setAddressList(Arrays.asList(addresses)).setConnectionTimeout(2).setReadTimeout(2).setWriteTimeout(2);
     }
     private static final class Endpoint implements AutoCloseable {
@@ -183,13 +185,13 @@ class ClientTransportCompatibilityTest {
         volatile String mode = "normal";
         volatile String redirect;
         Endpoint(String certificate) throws Exception {
-            if (certificate == null) server = HttpServer.create(new InetSocketAddress("127.0.0.1", 0), 0);
+            if (certificate == null) server = HttpServer.create(new InetSocketAddress(NetUtils.getLoopbackHost(), 0), 0);
             else {
                 KeyStore keys = KeyStore.getInstance("JKS");
                 try (InputStream in = Files.newInputStream(directory.resolve(certificate + ".jks"))) { keys.load(in, STORE_PASSWORD.toCharArray()); }
                 KeyManagerFactory kmf = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm()); kmf.init(keys, STORE_PASSWORD.toCharArray());
                 SSLContext context = SSLContext.getInstance("TLS"); context.init(kmf.getKeyManagers(), null, null);
-                HttpsServer https = HttpsServer.create(new InetSocketAddress("127.0.0.1", 0), 0);
+                HttpsServer https = HttpsServer.create(new InetSocketAddress(NetUtils.getLoopbackHost(), 0), 0);
                 https.setHttpsConfigurator(new HttpsConfigurator(context)); server = https;
             }
             server.setExecutor(executor); server.createContext("/openApi/", this::handle); server.start();
