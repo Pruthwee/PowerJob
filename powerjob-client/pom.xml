@@ -20,7 +20,7 @@
         <fastjson.version>1.2.84</fastjson.version>
         <powerjob.common.version>5.1.7</powerjob.common.version>
 
-        <mvn.shade.plugin.version>3.2.4</mvn.shade.plugin.version>
+        <mvn.shade.plugin.version>3.6.2</mvn.shade.plugin.version>
     </properties>
 
     <dependencies>

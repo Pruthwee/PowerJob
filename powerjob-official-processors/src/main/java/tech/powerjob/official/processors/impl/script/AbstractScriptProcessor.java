@@ -132,7 +132,7 @@ public abstract class AbstractScriptProcessor extends CommonBasicProcessor {
             }
         }
         else {
-            try (FileWriter fw = new FileWriter(script); BufferedWriter bw = new BufferedWriter(fw)) {
+            try (Writer fw = new OutputStreamWriter(Files.newOutputStream(script.toPath()), StandardCharsets.UTF_8); BufferedWriter bw = new BufferedWriter(fw)) {
                 bw.write(processorInfo);
                 bw.flush();
             }
