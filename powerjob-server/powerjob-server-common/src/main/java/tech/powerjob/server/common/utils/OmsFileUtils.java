@@ -7,6 +7,8 @@ import org.springframework.util.DigestUtils;
 import javax.servlet.http.HttpServletResponse;
 import java.io.*;
 import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 
 /**
  * 文件工具类，统一文件存放地址
@@ -68,7 +70,7 @@ public class OmsFileUtils {
      * @param file 文件
      */
     public static void string2File(String content, File file) {
-        try(FileWriter fw = new FileWriter(file)) {
+        try(Writer fw = new OutputStreamWriter(Files.newOutputStream(file.toPath()), StandardCharsets.UTF_8)) {
             fw.write(content);
         }catch (IOException ie) {
             ExceptionUtils.rethrow(ie);

@@ -1,6 +1,7 @@
 package tech.powerjob.official.processors.impl.script;
 
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 
 /**
  * CMDProcessor
@@ -22,6 +23,6 @@ public class CMDProcessor extends AbstractScriptProcessor {
 
     @Override
     protected Charset getCharset() {
-        return Charset.defaultCharset();
+        return StandardCharsets.UTF_8;
     }
 }

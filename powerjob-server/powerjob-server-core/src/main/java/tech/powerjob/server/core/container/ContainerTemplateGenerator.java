@@ -7,6 +7,9 @@ import org.apache.commons.lang3.StringUtils;
 import tech.powerjob.server.common.utils.OmsFileUtils;
 
 import java.io.*;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.Objects;
 
 /**
@@ -50,7 +53,7 @@ public class ContainerTemplateGenerator {
 
         String line;
         StringBuilder buffer = new StringBuilder();
-        try (BufferedReader br = new BufferedReader(new FileReader(pomPath))) {
+        try (BufferedReader br = new BufferedReader(new FileReader(pomPath, StandardCharsets.UTF_8))) {
             while ((line = br.readLine()) != null) {
 
                 if (line.contains("<groupId>groupId</groupId>")) {
@@ -81,7 +84,7 @@ public class ContainerTemplateGenerator {
         String springXMLPath = resourcePath + ContainerConstant.SPRING_CONTEXT_FILE_NAME;
         buffer.setLength(0);
 
-        try (BufferedReader br = new BufferedReader(new FileReader(springXMLPath))) {
+        try (BufferedReader br = new BufferedReader(new FileReader(springXMLPath, StandardCharsets.UTF_8))) {
             while ((line = br.readLine()) != null) {
 
                 if (line.contains("<context:component-scan base-package=\"")) {

@@ -1,5 +1,5 @@
 # 为了便于使用 arthas，agent 也使用 jdk 而不是 jre
-FROM adoptopenjdk:8-jdk-hotspot
+FROM adoptopenjdk:21-jdk-hotspot
 MAINTAINER tengjiqi@gmail.com
 
 ENV APP_NAME=powerjob-worker-agent

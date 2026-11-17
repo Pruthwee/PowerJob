@@ -410,7 +410,7 @@ public class LightTaskTracker extends TaskTracker {
 
         log.warn("[TaskTracker-{}] fail to interrupt the thread[{}], try to force stop.", instanceId, threadName);
         try {
-            thread.stop();
+            thread.interrupt();
             return true;
         } catch (Throwable t) {
             log.warn("[TaskTracker-{}] stop thread[{}] failed, msg: {}", instanceId, threadName, t.getMessage());

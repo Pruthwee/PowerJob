@@ -7,6 +7,7 @@ import javax.servlet.*;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletRequestWrapper;
 import java.io.*;
+import java.nio.charset.StandardCharsets;
 import java.util.Locale;
 import java.util.Set;
 
@@ -68,7 +69,7 @@ public class CachingRequestBodyFilter implements Filter {
             try {
                 InputStream inputStream = request.getInputStream();
                 if (inputStream != null) {
-                    bufferedReader = new BufferedReader(new InputStreamReader(inputStream));
+                    bufferedReader = new BufferedReader(new InputStreamReader(inputStream, StandardCharsets.UTF_8));
                     char[] charBuffer = new char[128];
                     int bytesRead = -1;
                     while ((bytesRead = bufferedReader.read(charBuffer)) > 0) {
@@ -85,7 +86,7 @@ public class CachingRequestBodyFilter implements Filter {
 
         @Override
         public ServletInputStream getInputStream() throws IOException {
-            final ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(body.getBytes());
+            final ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(body.getBytes(StandardCharsets.UTF_8));
 
             return new ServletInputStream() {
                 public int read() throws IOException {
@@ -111,7 +112,7 @@ public class CachingRequestBodyFilter implements Filter {
 
         @Override
         public BufferedReader getReader() throws IOException {
-            return new BufferedReader(new InputStreamReader(this.getInputStream()));
+            return new BufferedReader(new InputStreamReader(this.getInputStream(), StandardCharsets.UTF_8));
         }
 
         public String getBody() {

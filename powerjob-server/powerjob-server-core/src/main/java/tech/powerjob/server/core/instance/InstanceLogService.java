@@ -36,6 +36,7 @@ import tech.powerjob.server.remote.server.redirector.DesignateServer;
 import javax.annotation.Resource;
 import java.io.*;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -149,7 +150,7 @@ public class InstanceLogService {
             String lineStr;
             long left = index * MAX_LINE_COUNT;
             long right = left + MAX_LINE_COUNT;
-            try (LineNumberReader lr = new LineNumberReader(new FileReader(logFile))) {
+            try (LineNumberReader lr = new LineNumberReader(new FileReader(logFile, StandardCharsets.UTF_8))) {
                 while ((lineStr = lr.readLine()) != null) {
 
                     // 指定范围内，读出
@@ -358,7 +359,7 @@ public class InstanceLogService {
      * @param logFile 目标日志文件
      */
     private void stream2File(Stream<LocalInstanceLogDO> stream, File logFile) {
-        try (FileWriter fw = new FileWriter(logFile); BufferedWriter bfw = new BufferedWriter(fw)) {
+        try (Writer fw = new OutputStreamWriter(Files.newOutputStream(logFile.toPath()), StandardCharsets.UTF_8); BufferedWriter bfw = new BufferedWriter(fw)) {
             stream.forEach(instanceLog -> {
                 try {
                     bfw.write(convertLog(instanceLog) + System.lineSeparator());

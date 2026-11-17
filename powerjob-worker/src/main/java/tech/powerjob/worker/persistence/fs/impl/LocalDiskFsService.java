@@ -8,6 +8,8 @@ import tech.powerjob.worker.common.utils.PowerFileUtils;
 import tech.powerjob.worker.persistence.fs.FsService;
 
 import java.io.*;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 
 /**
  * 本地磁盘
@@ -36,9 +38,9 @@ public class LocalDiskFsService implements FsService {
         FileUtils.createParentDirectories(file);
 
         // 在使用 BufferedReader 包装 FileReader 的情况下，不需要单独关闭 FileReader。当你调用 BufferedReader 的 close() 方法时，它会负责关闭它所包装的 FileReader。这是因为 BufferedReader.close() 方法内部会调用它所包装的流的 close() 方法，确保所有相关资源都被释放，包括底层的文件句柄
-        FileWriter fileWriter = new FileWriter(file);
+        FileWriter fileWriter = new FileWriter(file, StandardCharsets.UTF_8);
         this.bufferedWriter = new BufferedWriter(fileWriter);
-        this.bufferedReader = new BufferedReader(new FileReader(file));
+        this.bufferedReader = new BufferedReader(new FileReader(file, StandardCharsets.UTF_8));
 
         log.info("[LocalDiskFsService] new LocalDiskFsService successfully, path: {}", filePath);
     }

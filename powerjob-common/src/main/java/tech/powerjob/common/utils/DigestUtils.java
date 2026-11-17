@@ -4,6 +4,7 @@ import lombok.SneakyThrows;
 import org.apache.commons.lang3.StringUtils;
 
 import java.math.BigInteger;
+import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 
 /**
@@ -27,7 +28,7 @@ public class DigestUtils {
         }
 
         MessageDigest md5 = MessageDigest.getInstance("MD5");
-        md5.update(input.getBytes());
+        md5.update(input.getBytes(StandardCharsets.UTF_8));
         byte[] byteArray = md5.digest();
 
         BigInteger bigInt = new BigInteger(1, byteArray);

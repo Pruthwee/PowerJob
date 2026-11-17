@@ -28,7 +28,7 @@ public class PingPongUtils {
      */
     public static boolean checkConnectivity(String targetIp, int targetPort) {
 
-        try (Socket s = new Socket(targetIp, targetPort);InputStream is = s.getInputStream();OutputStream os = s.getOutputStream();BufferedReader br = new BufferedReader(new InputStreamReader(is))) {
+        try (Socket s = new Socket(targetIp, targetPort);InputStream is = s.getInputStream();OutputStream os = s.getOutputStream();BufferedReader br = new BufferedReader(new InputStreamReader(is, StandardCharsets.UTF_8))) {
 
             s.setSoTimeout(2000);
             s.setKeepAlive(false);
