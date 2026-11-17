@@ -22,6 +22,6 @@ public class PowerShellProcessor extends AbstractScriptProcessor {
 
     @Override
     protected Charset getCharset() {
-        return Charset.defaultCharset();
+        return Charset.forName(System.getProperty("native.encoding", Charset.defaultCharset().name()));
     }
 }

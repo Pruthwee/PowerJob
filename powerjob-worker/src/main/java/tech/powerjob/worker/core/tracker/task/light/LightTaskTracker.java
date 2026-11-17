@@ -408,13 +408,8 @@ public class LightTaskTracker extends TaskTracker {
             return false;
         }
 
-        log.warn("[TaskTracker-{}] fail to interrupt the thread[{}], try to force stop.", instanceId, threadName);
-        try {
-            thread.stop();
-            return true;
-        } catch (Throwable t) {
-            log.warn("[TaskTracker-{}] stop thread[{}] failed, msg: {}", instanceId, threadName, t.getMessage());
-        }
+        // Thread.stop() throws UnsupportedOperationException since Java 20, a thread can only be stopped cooperatively (interrupt) now.
+        log.warn("[TaskTracker-{}] fail to interrupt the thread[{}], force stop is not supported on Java 20+, the thread keeps running until it handles the interrupt.", instanceId, threadName);
         return false;
     }
 
